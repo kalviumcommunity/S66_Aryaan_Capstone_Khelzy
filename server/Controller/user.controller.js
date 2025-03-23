@@ -35,6 +35,42 @@ const getUsers = async(req,res)=>{
     }
 }
 
+const createUser = async(req,res)=>{
+    const{username,email,password} = req.body;
+    try{
+        if(!username){
+            return res.status(400).send("Username is required to be filled")
+        }
+        if(!email){
+            return res.status(400).send("Email is required to be filled")
+        }
+        if(!password){
+            return res.status(400).send("Password is required to be filled")
+        }
 
-module.exports = {getUsers}
+        const exsistingUser = await mockUsers.find(user=>user.email === email);
+        if(exsistingUser){
+            return res.status(400).send("User with this email already exsist")
+        }
+
+        const newUser=({
+            username,
+            email,
+            password
+        })
+
+        mockUsers.push(newUser)
+
+        res.status(201).json({
+            success:true,
+            message:"User created successfully",
+            user : newUser
+        })
+    }catch(error){
+        res.status(500).json({error:error.message})
+    }
+}
+
+
+module.exports = {getUsers,createUser}
 
