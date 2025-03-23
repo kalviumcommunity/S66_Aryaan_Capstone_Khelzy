@@ -69,5 +69,5 @@ Khelzy is a platform that brings joy to your system without the need to download
 
 ---
 
-## Buffer Days (5 days)
+## Buffer Days (7 days)
 Use as needed for unexpected bugs, delays, or extra features
