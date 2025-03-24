@@ -15,53 +15,10 @@ const getUsers = async(req,res)=>{
     }
 }
 
-const createUser = async(req,res)=>{
-    const{username,email,password} = req.body;
-    try{
-        if(!username){
-            return res.status(400).json({message:"Username is required to be filled"})
-        }
-        if(!email){
-            return res.status(400).json({message:"Email is required to be filled"})
-        }
-        if(!password){
-            return res.status(400).json({message:"Password is required to be filled"})
-        }
-
-        const exsistingUser = await User.findOne({email});
-        if(exsistingUser){
-            return res.status(400).json({message:"User with this email already exist"})
-        }
-
-        const newUser= new User({
-            username,
-            email,
-            password
-        })
-
-        await newUser.save()
-
-        res.status(201).json({
-            success:true,
-            message:"User created successfully",
-            user : newUser
-        })
-    }catch(error){
-        res.status(500).json({error:error.message})
-    }
-}
-
-const updateUser =async(req,res)=>{
-    const{username,email,password} = req.body;
-    try{
-        
-    }catch(error){
-        res.status(500).json({error:error.message})
-    }
-}
 
 
 
 
-module.exports = {getUsers,createUser}
+
+module.exports = {getUsers}
 
