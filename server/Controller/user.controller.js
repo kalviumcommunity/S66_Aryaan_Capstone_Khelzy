@@ -1,34 +1,14 @@
 const User = require('../Model/user.model')
 
-const mockUsers = [
-    {
-        
-        username: "john_doe",
-        email: "john@example.com",
-        password: "hashedPassword123"
-    },
-    {
-        
-        username: "jane_smith",
-        email: "jane@example.com",
-        password: "hashedPassword456"
-    },
-    {
-        
-        username: "mike_wilson",
-        email: "mike@example.com",
-        password: "hashedPassword789"
-    }
-];
-
 const getUsers = async(req,res)=>{
-
     try{
+       
+        const user = await User.find()
         res.status(200).json({
             success:true,
-            users:mockUsers
+            users:user
         })
-
+        
 
     }catch(error){
         res.status(500).json({error:error.message})
@@ -39,27 +19,27 @@ const createUser = async(req,res)=>{
     const{username,email,password} = req.body;
     try{
         if(!username){
-            return res.status(400).send("Username is required to be filled")
+            return res.status(400).json({message:"Username is required to be filled"})
         }
         if(!email){
-            return res.status(400).send("Email is required to be filled")
+            return res.status(400).json({message:"Email is required to be filled"})
         }
         if(!password){
-            return res.status(400).send("Password is required to be filled")
+            return res.status(400).json({message:"Password is required to be filled"})
         }
 
-        const exsistingUser = await mockUsers.find(user=>user.email === email);
+        const exsistingUser = await User.findOne({email});
         if(exsistingUser){
-            return res.status(400).send("User with this email already exsist")
+            return res.status(400).json({message:"User with this email already exsist"})
         }
 
-        const newUser=({
+        const newUser= new User({
             username,
             email,
             password
         })
 
-        mockUsers.push(newUser)
+        await newUser.save()
 
         res.status(201).json({
             success:true,
@@ -70,6 +50,9 @@ const createUser = async(req,res)=>{
         res.status(500).json({error:error.message})
     }
 }
+
+
+
 
 
 module.exports = {getUsers,createUser}

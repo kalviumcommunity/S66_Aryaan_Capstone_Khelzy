@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
+const connectDB = require('./Config/db')
 const router = require('./Routes/user.route')
+
 
 const PORT = process.env.PORT || 5000;
 
@@ -16,6 +18,12 @@ app.get('/', (req, res) => {
 
 
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, async() => {
+  try{  
+    await connectDB()
+    console.log(`Server is running on port ${PORT}`);
+  }catch(error){
+    console.error(error.message)
+  }
+  
 });
