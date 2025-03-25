@@ -48,11 +48,22 @@ const createUser = async (req, res) => {
     });
 
     await newUser.save();
+    const token = jwt.sign(
+        {
+          userId: newUser._id,
+          email: newUser.email,
+          username: newUser.username,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1hr" }
+      );
+
 
     res.status(201).json({
       success: true,
       message: "User created successfully",
       user: newUser,
+      token
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -100,19 +111,10 @@ const loginUser = async (req, res) => {
       return res.send(400).json({ message: "The user was not found" });
     }
 
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        email: user.email,
-        username: user.username,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1hr" }
-    );
+    
 
     res.status(200).json({
       message: "Login Successfully",
-      token,
       user: {
         userId: user._id,
         username: user.username,
