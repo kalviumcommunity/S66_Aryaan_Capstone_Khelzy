@@ -1,1 +1,11 @@
-*node_module\
+# Node modules in all directories
+node_modules/
+**/node_modules/
+
+# Server specific
+server/node_modules/
+
+# Environment variables
+.env
+**/.env
+
