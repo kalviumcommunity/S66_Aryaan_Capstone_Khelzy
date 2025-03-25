@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const auth = require('../MiddleWare/auth')
 const {
   getUsers,
   createUser,
@@ -10,6 +11,6 @@ const {
 router.get("/get", getUsers);
 router.post("/post", createUser);
 router.put("/put/:id", updateUser);
-router.post("/login", loginUser);
+router.post("/login",auth, loginUser);
 
 module.exports = router;

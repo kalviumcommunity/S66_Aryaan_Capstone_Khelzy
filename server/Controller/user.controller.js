@@ -1,6 +1,7 @@
 
 const User = require("../Model/user.model");
 const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt')
 require("dotenv").config();
 
 const getUsers = async (req, res) => {
@@ -14,6 +15,7 @@ const getUsers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 const createUser = async (req, res) => {
   const { username, email, password } = req.body;
@@ -41,18 +43,35 @@ const createUser = async (req, res) => {
         .json({ message: "User with this email already exist" });
     }
 
+    const hash = await bcrypt.hash(password,12)
+
     const newUser = new User({
       username,
       email,
-      password,
+      password : hash
     });
 
+
+
     await newUser.save();
+
+
+    const token = jwt.sign(
+        {
+          userId: newUser._id,
+          email: newUser.email,
+          username: newUser.username,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1hr" }
+      );
+
 
     res.status(201).json({
       success: true,
       message: "User created successfully",
       user: newUser,
+      token
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -86,6 +105,7 @@ const updateUser = async (req, res) => {
   }
 };
 
+
 const loginUser = async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -97,22 +117,17 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.send(400).json({ message: "The user was not found" });
+      return res.status(400).json({ message: "The user was not found" });
     }
 
-    const token = jwt.sign(
-      {
-        userId: user._id,
-        email: user.email,
-        username: user.username,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1hr" }
-    );
+    const isMatch = await bcrypt.compare(password,user.password)
+    if(!isMatch){
+        return res.status(400).json({message:"Incorrect email or password"})
+    }
+    
 
     res.status(200).json({
       message: "Login Successfully",
-      token,
       user: {
         userId: user._id,
         username: user.username,
