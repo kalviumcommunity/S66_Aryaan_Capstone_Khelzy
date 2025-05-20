@@ -167,17 +167,7 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
-/**
- * Check if the user is authenticated without returning user data
- * Useful for simple auth checks on protected routes
- */
-const checkAuth = async (req, res) => {
-    // If this function is reached, the user is authenticated (verifyToken middleware)
-    res.status(200).json({
-        success: true,
-        isAuthenticated: true
-    });
-};
+
 
 const refreshAccessToken = async (req, res) => {
     try {
@@ -240,4 +230,4 @@ const refreshAccessToken = async (req, res) => {
     }
 };
 
-module.exports = { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken };
+module.exports = { register, login, logout, getCurrentUser, refreshAccessToken };
