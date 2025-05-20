@@ -8,7 +8,7 @@ const gameRouter = express.Router();
 gameRouter.get('/', getGames);
 gameRouter.get('/counts', getAllGameCounts);  // New route for getting all game counts
 gameRouter.get('/:id', getGameById);
-gameRouter.get('/:id/count', getGameCount);
+gameRouter.get('/:id/count',verifyToken, getGameCount);
 
 // Protected routes - require authentication
 gameRouter.post('/add', verifyToken, addGame);

@@ -66,7 +66,7 @@ const login = async (req, res) => {
             secure: true,
             sameSite: 'none',
             path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+            domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined,
             maxAge: 3600000 // 1 hour
         };
 
