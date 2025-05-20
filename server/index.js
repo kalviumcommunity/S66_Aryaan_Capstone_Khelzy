@@ -1,14 +1,14 @@
 const express = require('express');
 const app = express();
 const connectDB = require('./Config/db')
-const router = require('./Routes/user.routes')
+const {userRouter} = require('./Routes/user.routes')
 
 
 const PORT = process.env.PORT || 5000;
 
 
 app.use(express.json());
-app.use('/user',router)
+app.use('/user',userRouter)
 
 
 
