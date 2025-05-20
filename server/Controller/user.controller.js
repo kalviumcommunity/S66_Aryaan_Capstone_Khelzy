@@ -189,7 +189,7 @@ const refreshAccessToken = async (req, res) => {
             });
         }
 
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET || 'refresh-secret');
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET );
         const user = await UserModel.findById(decoded.userId);
 
         if (!user) {
@@ -218,7 +218,7 @@ const refreshAccessToken = async (req, res) => {
 
         // Set new tokens in cookies
         res.cookie('token', newAccessToken, cookieOptions);
-        res.cookie('refreshToken', newRefreshCookieOptions);
+        res.cookie('refreshToken', newRefreshToken , refreshCookieOptions);
 
         res.json({
             success: true,
