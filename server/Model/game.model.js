@@ -26,11 +26,11 @@ const gameSchema = mongoose.Schema({
         required: true
     },
     width: {
-        type: String,
+        type: Number,
         required: true
     },
     height: {
-        type: String,
+        type: Number,
         required: true
     },
     count: {
