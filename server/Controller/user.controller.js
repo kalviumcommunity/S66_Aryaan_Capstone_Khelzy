@@ -20,7 +20,7 @@ const register = async (req, res) => {
             name, 
             email, 
             password: hash,
-           
+
         });
         await user.save();
         
@@ -168,7 +168,6 @@ const getCurrentUser = async (req, res) => {
 };
 
 
-
 const refreshAccessToken = async (req, res) => {
     try {
         const refreshToken = req.cookies.refreshToken;
@@ -180,7 +179,9 @@ const refreshAccessToken = async (req, res) => {
             });
         }
 
+
         const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
         const user = await UserModel.findById(decoded.userId);
 
         if (!user) {
@@ -208,8 +209,10 @@ const refreshAccessToken = async (req, res) => {
         };
 
         // Set new tokens in cookies
-        res.cookie('token', newAccessToken, cookieOptions);
+         res.cookie('token', newAccessToken, cookieOptions);
+
          res.cookie('refreshToken', newRefreshToken , refreshCookieOptions);
+
 
         res.json({
             success: true,
@@ -230,4 +233,6 @@ const refreshAccessToken = async (req, res) => {
     }
 };
 
+
 module.exports = { register, login, logout, getCurrentUser, refreshAccessToken };
+
