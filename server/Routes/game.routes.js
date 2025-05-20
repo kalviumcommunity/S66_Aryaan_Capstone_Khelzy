@@ -13,7 +13,7 @@ gameRouter.get('/:id/count',verifyToken, getGameCount);
 // Protected routes - require authentication
 gameRouter.post('/add', verifyToken, addGame);
 gameRouter.patch('/update/:id', verifyToken, updateGame);
-gameRouter.patch('/:id/count',  updateGameCount);
+gameRouter.patch('/:id/count', verifyToken, updateGameCount);
 gameRouter.delete('/delete/:id', verifyToken, deleteGame);
 
 module.exports = { gameRouter };
