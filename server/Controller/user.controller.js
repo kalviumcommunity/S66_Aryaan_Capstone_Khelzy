@@ -20,6 +20,7 @@ const register = async (req, res) => {
             name, 
             email, 
             password: hash,
+
         });
         await user.save();
         
@@ -65,7 +66,7 @@ const login = async (req, res) => {
             secure: true,
             sameSite: 'none',
             path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+            domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined,
             maxAge: 3600000 // 1 hour
         };
 
@@ -166,17 +167,6 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
-/**
- * Check if the user is authenticated without returning user data
- * Useful for simple auth checks on protected routes
- */
-const checkAuth = async (req, res) => {
-    // If this function is reached, the user is authenticated (verifyToken middleware)
-    res.status(200).json({
-        success: true,
-        isAuthenticated: true
-    });
-};
 
 const refreshAccessToken = async (req, res) => {
     try {
@@ -189,7 +179,9 @@ const refreshAccessToken = async (req, res) => {
             });
         }
 
-        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET );
+
+        const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
         const user = await UserModel.findById(decoded.userId);
 
         if (!user) {
@@ -217,8 +209,10 @@ const refreshAccessToken = async (req, res) => {
         };
 
         // Set new tokens in cookies
-        res.cookie('token', newAccessToken, cookieOptions);
-        res.cookie('refreshToken', newRefreshToken , refreshCookieOptions);
+         res.cookie('token', newAccessToken, cookieOptions);
+
+         res.cookie('refreshToken', newRefreshToken , refreshCookieOptions);
+
 
         res.json({
             success: true,
@@ -239,4 +233,6 @@ const refreshAccessToken = async (req, res) => {
     }
 };
 
-module.exports = { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken };
+
+module.exports = { register, login, logout, getCurrentUser, refreshAccessToken };
+

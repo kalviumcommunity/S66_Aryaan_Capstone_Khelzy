@@ -1,10 +1,12 @@
-const express = require("express");
+const express = require('express');
+const { register, login, logout,refreshAccessToken} = require('../Controller/user.controller');
 const userRouter = express.Router();
-const { register, login, logout } = require('../Controller/user.controller');
+
 
 userRouter.post('/register', register);
 userRouter.post('/login', login);
 userRouter.post('/logout', logout);
+userRouter.post('/refresh-token', refreshAccessToken);
 
+module.exports = {userRouter}
 
-module.exports = { userRouter };
