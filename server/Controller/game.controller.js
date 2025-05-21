@@ -22,6 +22,12 @@ const addGame = async (req, res) => {
             });
         }
 
+        
+    
+        if(!mongoose.Types.ObjectId.isValid(gameId)) {
+            return res.status(400).json({ error: 'Invalid game ID format' });
+        }
+
         const game = new GameModel(req.body);
         await game.save();
         res.status(201).json({ 
