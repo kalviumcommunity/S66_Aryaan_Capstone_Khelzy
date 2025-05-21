@@ -3,7 +3,7 @@ const { GameModel } = require('../Model/game.model');
 const addGame = async (req, res) => {
     try {
         // Validate required fields
-        const requiredFields = ['title', 'description', 'url', 'developer', 'rating', 'tags'];
+        const requiredFields = ['title', 'description', 'url', 'imageUrl','developer','tags'];
         for (const field of requiredFields) {
             if (!req.body[field]) {
                 return res.status(400).json({
