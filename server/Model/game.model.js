@@ -17,6 +17,10 @@ const gameSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    imageUrl:{
+        type: String,
+        required: true
+    },
     category: {
         type: String,
         required: true
@@ -41,12 +45,13 @@ const gameSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    rating: {
+    liked: {
         type: Number,
-        required: true,
-        min: 0,
-        max: 5,
         default: 0
+    },
+    disLiked:{
+        type:Number,
+        default:0
     }
 }, {
     timestamps: true

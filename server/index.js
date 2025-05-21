@@ -1,17 +1,22 @@
 const express = require('express');
 const app = express();
 const connectDB = require('./Config/db')
+const cookieParser = require('cookie-parser');
 const {userRouter} = require('./Routes/user.routes')
 const {gameRouter} = require('./Routes/game.routes')
+const {commentRouter} = require('./Routes/comment.routes')
 
 
 
 const PORT = process.env.PORT || 5000;
 
-
+//MiddleWare
 app.use(express.json());
+app.use(cookieParser());
+
 app.use('/user',userRouter)
 app.use('/games', gameRouter);
+app.use('/comments',commentRouter)
 
 
 app.get('/', (req, res) => {
