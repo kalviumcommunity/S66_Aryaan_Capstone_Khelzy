@@ -64,3 +64,7 @@ Khelzy is a platform that will bring joy to your system without the need to down
 ### Backend deployment Link : 
 
 * https://s66-aryaan-capstone-khelzy.onrender.com
+
+### Frontend deployment Link:
+
+* https://s66-aryaan-capstone-khelzy.vercel.app/
