@@ -18,8 +18,8 @@ const GameCard = ({game}) => {
       const response = await axios.post(`${API_URL}/games/${game._id}/count`, {}, {
         withCredentials: true
       })
-      
-      if (!response.data || response.status >= 400) {
+
+      if (!response.data) {
         throw new Error('Failed to update game count');
       }
       
