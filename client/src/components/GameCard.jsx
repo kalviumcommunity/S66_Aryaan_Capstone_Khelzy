@@ -19,6 +19,10 @@ const GameCard = ({game}) => {
         withCredentials: true
       })
       
+      if (!response.data || response.status >= 400) {
+        throw new Error('Failed to update game count');
+      }
+      
       
         
         setLocalCount(response.data.count);
