@@ -15,7 +15,7 @@ const GameCard = ({game}) => {
 
     try {
 
-      const response = await axios.post(`${API_URL}/games/${game._id}/count`,  {
+      const response = await axios.post(`${API_URL}/games/${game._id}/count`, {}, {
         withCredentials: true
       })
       
