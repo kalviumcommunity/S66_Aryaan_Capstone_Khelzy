@@ -20,7 +20,7 @@ const GameCard = ({game}) => {
       
       
         
-        setLocalCount(response.count);
+        setLocalCount(response.data.count);
      
       // Navigate to game details page
       // navigate(`/games/${game._id}`);
