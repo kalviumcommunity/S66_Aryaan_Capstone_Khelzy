@@ -19,11 +19,7 @@ function App() {
        <Routes>
         <Route path='/landing' element={<LandingPage/>}/>
         <Route path="/" element={<Navigate to="/landing" replace />} />
-        <Route path="/home" element={
-          
-             <Header></Header>
-          
-          } />
+        <Route path="/home" element={<Header/>} />
        </Routes>
      </Router>
     </ThemeProvider>
