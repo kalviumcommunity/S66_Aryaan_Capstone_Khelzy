@@ -187,7 +187,7 @@ function LandingPage() {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center">
                 <svg width="100%" height="100%" viewBox="-50 -50 100 100">
                   <defs>
-                    <linearGradient id="cosmic1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="cosmic1-header" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" style={{ stopColor: '#06c1ff' }} />
                       <stop offset="100%" style={{ stopColor: '#0b8fd8' }} />
                     </linearGradient>
@@ -199,7 +199,7 @@ function LandingPage() {
                       </feMerge>
                     </filter>
                   </defs>
-                  <circle cx="0" cy="0" r="50" fill="url(#cosmic1)" filter="url(#glow)"/>
+                  <circle cx="0" cy="0" r="50" fill="url(#cosmic1-header)" filter="url(#glow)"/>
                   <path d="M 0 0 Q 15 -15 25 0 Q 15 25 -10 15 Q -25 -5 -15 -20 Q 5 -25 20 -10" 
                         fill="none" stroke="white" strokeWidth="4" strokeLinecap="round"/>
                   <circle cx="0" cy="0" r="4" fill="white"/>
@@ -546,7 +546,7 @@ function LandingPage() {
               <div className="w-10 h-10 rounded-xl flex items-center justify-center">
                 <svg width="100%" height="100%" viewBox="-50 -50 100 100">
                   <defs>
-                    <linearGradient id="cosmic1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient id="cosmic1-footer" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" style={{ stopColor: '#06c1ff' }} />
                       <stop offset="100%" style={{ stopColor: '#0b8fd8' }} />
                     </linearGradient>
@@ -558,7 +558,7 @@ function LandingPage() {
                       </feMerge>
                     </filter>
                   </defs>
-                  <circle cx="0" cy="0" r="50" fill="url(#cosmic1)" filter="url(#glow)"/>
+                  <circle cx="0" cy="0" r="50" fill="url(#cosmic1-footer)" filter="url(#glow)"/>
                   <path d="M 0 0 Q 15 -15 25 0 Q 15 25 -10 15 Q -25 -5 -15 -20 Q 5 -25 20 -10" 
                         fill="none" stroke="white" strokeWidth="4" strokeLinecap="round"/>
                   <circle cx="0" cy="0" r="4" fill="white"/>
