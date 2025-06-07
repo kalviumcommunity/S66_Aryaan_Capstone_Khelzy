@@ -38,7 +38,7 @@ const verifyAuth = async () => {
       fetch(`${API_URL}/user/check`, {
         ...fetchOptions,
         method: 'GET',
-        credentials: 'include', // Ensure credentials are included
+        credentials: 'include',
         headers: {
           ...fetchOptions.headers,
           // Add token from cookie if available
@@ -56,10 +56,15 @@ const verifyAuth = async () => {
       })
     ]);
 
-    console.log(responses)
-    return responses.some(response => 
-      response.status === 'fulfilled' && response.value.ok
+    // Check for successful responses and parse JSON
+    const validResponses = await Promise.all(
+      responses
+        .filter(r => r.status === 'fulfilled' && r.value.ok)
+        .map(r => r.value.json().catch(() => ({ authenticated: false })))
     );
+
+    return validResponses.some(data => data.authenticated !== false);
+
   } catch (error) {
     console.error('Auth verification failed:', error);
     return false;
@@ -155,9 +160,7 @@ const AuthRoute = ({ children }) => {
   return children;
 };
 
-// AuthRoute.propTypes = {
-//   children: PropTypes.node.isRequired,
-// };
+
 
 function App() {
   return (
