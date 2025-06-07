@@ -57,12 +57,13 @@ const TopChart = () => {
         const elapsedTime = Date.now() - startTime
         const remainingDelay = Math.max(0, 3000 - elapsedTime)
         setTimeout(() => {
+          setGames(gameDetails.filter(game => game !== null));
           setLoading(false)
         }, remainingDelay)
 
-        setGames(gameDetails.filter(game => game !== null));
       } catch (error) {
         setError(error.message);
+        setLoading(false)
       } 
     };
 
@@ -81,13 +82,15 @@ const TopChart = () => {
      <div className={`min-h-screen ${theme.background}`}>
         <Header />
         <div className="flex flex-col justify-center items-center h-screen">
-          <div className="w-102 h-102 mb-4"> 
+          <div className="w-96 h-96 mb-4"> 
             <DotLottieReact
               src="https://lottie.host/012ee33b-d9b9-443f-975a-62aad5995217/S8sXukPLpf.lottie"
               loop
               autoplay
               className="w-full h-full"
-              onError={() => console.error("Failed to load animation")}
+              onError={() => {console.error("Failed to load animation");
+                setError("Failed to load animation. Please refresh the page.");
+              }}
               fallback={<div className="animate-pulse bg-gray-300 w-full h-full rounded-lg"></div>}
             />
           </div>
