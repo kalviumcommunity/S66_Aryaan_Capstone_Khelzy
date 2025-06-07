@@ -118,6 +118,7 @@ const FaceAuth = () => {
                     success: false, 
                     message: "No face detected in camera" 
                 });
+                setIsVerifying(false);
                 return;
             }
 
