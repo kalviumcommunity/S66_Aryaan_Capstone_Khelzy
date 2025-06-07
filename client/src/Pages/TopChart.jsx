@@ -17,6 +17,7 @@ const TopChart = () => {
       try {
         const startTime = Date.now()
         setLoading(true);
+        setError(null);
         const response = await fetch(`${API_URL}/games/counts`);
         if (!response.ok) {
           throw new Error(`Server responded with status: ${response.status}`);
@@ -52,13 +53,13 @@ const TopChart = () => {
             count: game.count || 0
           };
         });
+        const gameDetails = await Promise.all(gameDetailsPromises);
         const elapsedTime = Date.now() - startTime
         const remainingDelay = Math.max(0, 3000 - elapsedTime)
         setTimeout(() => {
           setLoading(false)
         }, remainingDelay)
 
-        const gameDetails = await Promise.all(gameDetailsPromises);
         setGames(gameDetails.filter(game => game !== null));
       } catch (error) {
         setError(error.message);
@@ -86,6 +87,8 @@ const TopChart = () => {
               loop
               autoplay
               className="w-full h-full"
+              onError={() => console.error("Failed to load animation")}
+              fallback={<div className="animate-pulse bg-gray-300 w-full h-full rounded-lg"></div>}
             />
           </div>
   
