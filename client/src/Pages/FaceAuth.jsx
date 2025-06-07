@@ -82,6 +82,7 @@ const FaceAuth = () => {
 
     const getFaceEmbedding = async () => {
         if (!videoRef.current || !videoRef.current.readyState || videoRef.current.readyState < 2) {
+            console.error("Video not ready for face detection");
             return null; // Video not ready yet
         }
         const detection = await faceapi.detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
