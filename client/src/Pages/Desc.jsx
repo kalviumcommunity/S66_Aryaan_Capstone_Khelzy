@@ -135,7 +135,6 @@ const Desc = () => {
     e.preventDefault();
 
     if (!addComments.trim()) {
-      // Fixed: added parentheses to trim()
       return;
     }
 
