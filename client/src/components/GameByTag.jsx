@@ -13,7 +13,7 @@ function GameByTag() {
   const { theme } = useTheme()
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null)
 
 
   useEffect(() => {
@@ -34,9 +34,9 @@ function GameByTag() {
         }, remainingDelay)
 
       } catch (error) {
-        console.error("Failed to get the game",error.message)
+        console.error("Failed to fetch games by category:", error.message)
         setGames([])
-        setError(error.response?.data?.message || 'Failed to load game.Please try again later.')
+        setError(error.response?.data?.message || 'Failed to load game. Please try again later.')
         setLoading(false)
       }
     }
@@ -47,7 +47,7 @@ function GameByTag() {
     return (
       <div className={`min-h-screen ${theme.background}`}>
         <Header />
-        <div className="flex flex-col justify-center items-center h-screen">
+        <div className="flex flex-col justify-center items-center min-h-[calc(100vh-80px)] pt-20">
           <div className="w-96 h-96 mb-4"> 
             <DotLottieReact
               src="https://lottie.host/012ee33b-d9b9-443f-975a-62aad5995217/S8sXukPLpf.lottie"
