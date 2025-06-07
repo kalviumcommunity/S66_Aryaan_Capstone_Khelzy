@@ -80,15 +80,16 @@ const ProtectedRoute = ({ children }) => {
         return;
       }
 
+      const elapsedTime = Date.now() - startTime
+      const remainingDelay = Math.max(0, 2000 - elapsedTime)
       
-        const elapsedTime = Date.now() - startTime
-        const remainingDelay = Math.max(0, 2000 - elapsedTime)
-        
-        setTimeout(() => {
-          setIsVerifying(false)
-        }, remainingDelay)
+      const timeoutId = setTimeout(() => {
+        setIsVerifying(false)
+      }, remainingDelay)
 
-        
+      return () => {
+        clearTimeout(timeoutId);
+      };
     };
 
     verify();
