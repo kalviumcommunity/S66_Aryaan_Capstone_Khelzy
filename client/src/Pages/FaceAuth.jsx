@@ -92,11 +92,19 @@ const FaceAuth = () => {
 
     const register = async () => {
         if (!email) return alert("Enter email!");
-
-        const faceEmbedding = await getFaceEmbedding();
-        if (!faceEmbedding) return alert("Face not detected!");
+        setIsVerifying(true);
 
         try {
+            const faceEmbedding = await getFaceEmbedding();
+            if (!faceEmbedding) {
+                setVerificationStatus({
+                    success: false,
+                    message: "No face detected in camera"
+                });
+                setIsVerifying(false);
+                return;
+            }
+
             const res = await axios.post(`${API_URL}/faceAuth/face/signup`, { 
                 email, 
                 faceEmbedding 
@@ -104,15 +112,16 @@ const FaceAuth = () => {
             stopCamera();
             setVerificationStatus({
                 success: true,
-                 message: res.data.message
+                message: res.data.message
             });
-            return;
         } catch (error) {
             console.log(`Failed with ${API_URL}:`, error);
             setVerificationStatus({
                 success: false,
                 message: error.response?.data?.message || "Registration failed"
             });
+        } finally {
+            setIsVerifying(false);
         }
     };
 
