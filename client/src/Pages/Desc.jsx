@@ -223,7 +223,7 @@ const Desc = () => {
       );
 
       setComments(updatedCommentsResponse.data);
-      // setEditingCommentId(null);
+      setEditingCommentId(null);
       setEditText("");
     } catch (error) {
       console.error("Failed to update comment:", error);
