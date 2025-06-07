@@ -127,6 +127,13 @@ const FaceAuth = () => {
 
     const login = async () => {
         if (!email) return alert("Enter email!");
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            setVerificationStatus({
+            success: false,
+            message: "Please enter a valid email address"
+        });
+        return;
+        }
         setIsVerifying(true);
 
         try {
