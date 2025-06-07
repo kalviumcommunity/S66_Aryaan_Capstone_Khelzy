@@ -99,11 +99,17 @@ const FaceAuth = () => {
                 faceEmbedding 
             });
             stopCamera();
-            alert(res.data.message);
+            setVerificationStatus({
+                success: true,
+                 message: res.data.message
+            });
             return;
         } catch (error) {
             console.log(`Failed with ${API_URL}:`, error);
-            alert("Registration failed");
+            setVerificationStatus({
+                success: false,
+                message: error.response?.data?.message || "Registration failed"
+            });
         }
     };
 
