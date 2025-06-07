@@ -130,18 +130,18 @@ const AuthRoute = ({ children }) => {
 
   useEffect(() => {
     const check = async () => {
-      try{
+      try {
         const isAuthenticated = await verifyAuth();
-      if (isAuthenticated) {
-        navigate('/home', { replace: true });
-        return;
+        if (isAuthenticated) {
+          navigate('/home', { replace: true });
+          return;
+        }
+        console.log(isAuthenticated);
+      } catch (error) {
+        console.error(error.message);
+      } finally {
+        setIsVerifying(false);
       }
-      console.log(isAuthenticated)
-      setIsVerifying(false);
-      }catch(error){
-        console.error(error.message)
-      }
-      
     };
 
     check();
