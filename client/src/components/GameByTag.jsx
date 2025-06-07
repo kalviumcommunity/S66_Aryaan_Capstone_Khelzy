@@ -48,7 +48,7 @@ function GameByTag() {
       <div className={`min-h-screen ${theme.background}`}>
         <Header />
         <div className="flex flex-col justify-center items-center h-screen">
-          <div className="w-102 h-102 mb-4"> 
+          <div className="w-96 h-96 mb-4"> 
             <DotLottieReact
               src="https://lottie.host/012ee33b-d9b9-443f-975a-62aad5995217/S8sXukPLpf.lottie"
               loop
