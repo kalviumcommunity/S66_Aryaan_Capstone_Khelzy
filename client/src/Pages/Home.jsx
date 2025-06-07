@@ -75,7 +75,7 @@ const FeaturedGames = () => {
 };
 
 // Enhanced Categories component
-const Categories = ({ onCategoryClick, selectedCategory }) => {
+const Categories = () => {
   const { theme } = useTheme();
   const categories = [
     { icon: "🎮", name: "All Games", id: "all" },
@@ -102,9 +102,7 @@ const Categories = ({ onCategoryClick, selectedCategory }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className={`min-w-[120px] py-3 px-4 rounded-xl cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-2 border-2 ${
-              selectedCategory === category.id 
-                ? `bg-[#06c1ff]/10 border-[#06c1ff]/50 text-[#06c1ff]` 
-                : `${theme.cardBg} ${theme.border} ${theme.secondary} hover:bg-[#06c1ff]/5 hover:border-[#06c1ff]/20 hover:text-[#06c1ff]`
+              `${theme.cardBg} ${theme.border} ${theme.secondary} hover:bg-[#06c1ff]/5 hover:border-[#06c1ff]/20 hover:text-[#06c1ff]`
             }`}
            
           >
@@ -202,12 +200,10 @@ const TrendingGames = () => {
 };
 
 function Home() {
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  
   const { theme } = useTheme();
   
-  const handleCategoryClick = (categoryId) => {
-    setSelectedCategory(categoryId);
-  };
+
 
   return (
     <div className={`min-h-screen ${theme.background} ${theme.primary} transition-colors duration-300`}>
@@ -226,8 +222,8 @@ function Home() {
             {/* Categories Section */}
             <section className="mb-12">
               <Categories 
-                onCategoryClick={handleCategoryClick} 
-                selectedCategory={selectedCategory} 
+                 
+                
               />
             </section>
             
