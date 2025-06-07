@@ -93,20 +93,18 @@ const FaceAuth = () => {
         const faceEmbedding = await getFaceEmbedding();
         if (!faceEmbedding) return alert("Face not detected!");
 
-        for (const baseUrl of API_URLS) {
-            try {
-                const res = await axios.post(`${baseUrl}/faceAuth/face/signup`, { 
-                    email, 
-                    faceEmbedding 
-                });
-                stopCamera();
-                alert(res.data.message);
-                return;
-            } catch (error) {
-                console.log(`Failed with ${baseUrl}:`, error);
-            }
+        try {
+            const res = await axios.post(`${API_URL}/faceAuth/face/signup`, { 
+                email, 
+                faceEmbedding 
+            });
+            stopCamera();
+            alert(res.data.message);
+            return;
+        } catch (error) {
+            console.log(`Failed with ${API_URL}:`, error);
+            alert("Registration failed");
         }
-        alert("Registration failed with all endpoints");
     };
 
     const login = async () => {
