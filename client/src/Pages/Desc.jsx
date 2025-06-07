@@ -636,7 +636,7 @@ const Desc = () => {
                                       </button>
                                       <button
                                         onClick={() =>
-                                          deleteComment (comment._id)
+                                          deleteComment(comment._id)
                                         }
                                         className="text-red-500 text-sm hover:text-red-400 hover:underline flex items-center gap-1"
                                       >
