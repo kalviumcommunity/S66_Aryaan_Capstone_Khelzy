@@ -137,6 +137,7 @@ const FaceAuth = () => {
         return;
         }
         setIsVerifying(true);
+        setVerificationStatus(null);
 
         try {
             const faceEmbedding = await getFaceEmbedding();
