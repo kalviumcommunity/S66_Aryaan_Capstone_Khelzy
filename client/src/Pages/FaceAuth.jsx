@@ -10,7 +10,7 @@ import { API_URL } from '../config';
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['Accept'] = 'application/json';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
-axios.defaults.headers.common['Origin'] = 'http://localhost:5173/';
+
 
 const FaceAuth = () => {
     const videoRef = useRef(null);
