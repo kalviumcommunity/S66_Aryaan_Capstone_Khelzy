@@ -115,7 +115,8 @@ const FaceAuth = () => {
                 message: res.data.message
             });
         } catch (error) {
-            console.log(`Failed with ${API_URL}:`, error);
+            console.error("Registration error:", error);
+            stopCamera();
             setVerificationStatus({
                 success: false,
                 message: error.response?.data?.message || "Registration failed"
