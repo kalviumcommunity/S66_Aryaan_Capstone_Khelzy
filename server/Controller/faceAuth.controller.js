@@ -1,6 +1,6 @@
 const Face = require("../models/faceAuth");
 const jwt = require("jsonwebtoken");
-const { createTokens } = require("../MiddleWare/authMiddleware");
+const { createTokens } = require("../MiddleWare/auth");
 
 // Utility: Cosine Similarity
 function cosineSimilarity(vec1, vec2) {
