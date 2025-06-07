@@ -101,9 +101,7 @@ const Categories = () => {
             key={index}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`min-w-[120px] py-3 px-4 rounded-xl cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-2 border-2 ${
-              `${theme.cardBg} ${theme.border} ${theme.secondary} hover:bg-[#06c1ff]/5 hover:border-[#06c1ff]/20 hover:text-[#06c1ff]`
-            }`}
+            className={`min-w-[120px] py-3 px-4 rounded-xl cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-2 border-2 ${theme.cardBg} ${theme.border} ${theme.secondary} hover:bg-[#06c1ff]/5 hover:border-[#06c1ff]/20 hover:text-[#06c1ff]`}
            
           >
             <div className="text-2xl">{category.icon}</div>
@@ -138,7 +136,7 @@ const GameGrid = () => {
         }
         
         const data = await response.json();
-        setGames(data.games );
+        setGames(data.games || []);
       } catch (error) {
         setError('Failed to fetch games');
         console.error('Error fetching games:', error);
@@ -155,7 +153,7 @@ const GameGrid = () => {
       {error && <div className="text-red-500">{error}</div>}
       {!error && games.length === 0 && <div>Loading games...</div>}
       {Array.isArray(games) && games.map(game => (
-        <GameCard key={game.id} game={game}></GameCard>
+        <GameCard key={game._id} game={game}></GameCard>
       ))}
     </div>
   );
@@ -221,10 +219,7 @@ function Home() {
           <div className="lg:col-span-9">
             {/* Categories Section */}
             <section className="mb-12">
-              <Categories 
-                 
-                
-              />
+              <Categories/>
             </section>
             
             {/* Popular Games Section */}
