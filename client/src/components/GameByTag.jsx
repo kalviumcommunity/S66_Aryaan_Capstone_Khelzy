@@ -13,6 +13,7 @@ function GameByTag() {
   const { theme } = useTheme()
   const [games, setGames] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null);
 
 
   useEffect(() => {
@@ -33,8 +34,9 @@ function GameByTag() {
         }, remainingDelay)
 
       } catch (error) {
-        console.error(error.message)
+        console.error("Failed to get the game",error.message)
         setGames([])
+        setError(error.response?.data?.message || 'Failed to load game.Please try again later.')
         setLoading(false)
       }
     }
@@ -89,7 +91,27 @@ function GameByTag() {
         </div>
 
         {/* Games Grid */}
-        {games.length > 0 ? (
+        {error ? (
+          <div className={`rounded-2xl ${theme.cardBg} ${theme.border} border-2 p-8 text-center`}>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h3 className={`text-xl font-semibold ${theme.primary} mb-2`}>
+              Error Loading Games
+            </h3>
+            <p className={`${theme.secondary}`}>
+              {error}
+            </p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-[#06c1ff] text-white rounded-lg hover:bg-[#06c1ff]/90 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : games.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {games.map((game) => (
               <GameCard key={game._id} game={game} />
