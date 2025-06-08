@@ -80,20 +80,26 @@ const ProtectedRoute = ({ children }) => {
     
     const verify = async () => {
       const startTime = Date.now();
-      const isAuthenticated = await verifyAuth();
-      
-      if (!isAuthenticated) {
-        setIsVerifying(false); // Immediately update state
-        navigate('/login', { replace: true });
-        return;
-      }
+      try {
+        const isAuthenticated = await verifyAuth();
+        
+        if (!isAuthenticated) {
+          setIsVerifying(false); // Immediately update state
+          navigate('/login', { replace: true });
+          return;
+        }
 
-      const elapsedTime = Date.now() - startTime;
-      const remainingDelay = Math.max(0, 2000 - elapsedTime);
-      
-      timeoutId = setTimeout(() => {
+        const elapsedTime = Date.now() - startTime;
+        const remainingDelay = Math.max(0, 2000 - elapsedTime);
+        
+        timeoutId = setTimeout(() => {
+          setIsVerifying(false);
+        }, remainingDelay);
+      } catch (error) {
+        console.error('Authentication verification error:', error);
         setIsVerifying(false);
-      }, remainingDelay);
+        navigate('/login', { replace: true });
+      }
     };
 
     verify();
