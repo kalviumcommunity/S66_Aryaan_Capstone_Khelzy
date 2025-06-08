@@ -41,7 +41,6 @@ const verifyAuth = async () => {
         credentials: 'include',
         headers: {
           ...fetchOptions.headers,
-          // Add token from cookie if available
           ...(document.cookie.includes('token=') && {
             'Authorization': `Bearer ${document.cookie.split('; ')
               .find(row => row.startsWith('token='))
@@ -63,7 +62,8 @@ const verifyAuth = async () => {
         .map(r => r.value.json().catch(() => ({ authenticated: false })))
     );
 
-    return validResponses.some(data => data.authenticated === true);
+    return validResponses.some(data => data.authenticated !== false);
+
   } catch (error) {
     console.error('Auth verification failed:', error);
     return false;
@@ -76,27 +76,31 @@ const ProtectedRoute = ({ children }) => {
   const [isVerifying, setIsVerifying] = useState(true);
 
   useEffect(() => {
+    let timeoutId;
+    
     const verify = async () => {
-      const startTime = Date.now()
+      const startTime = Date.now();
       const isAuthenticated = await verifyAuth();
+      
       if (!isAuthenticated) {
+        setIsVerifying(false); // Immediately update state
         navigate('/login', { replace: true });
         return;
       }
 
-      const elapsedTime = Date.now() - startTime
-      const remainingDelay = Math.max(0, 2000 - elapsedTime)
+      const elapsedTime = Date.now() - startTime;
+      const remainingDelay = Math.max(0, 2000 - elapsedTime);
       
-      const timeoutId = setTimeout(() => {
-        setIsVerifying(false)
-      }, remainingDelay)
-
-      return () => {
-        clearTimeout(timeoutId);
-      };
+      timeoutId = setTimeout(() => {
+        setIsVerifying(false);
+      }, remainingDelay);
     };
 
     verify();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [navigate]);
 
   if (isVerifying) {
@@ -159,7 +163,9 @@ const AuthRoute = ({ children }) => {
   return children;
 };
 
-
+// AuthRoute.propTypes = {
+//   children: PropTypes.node isRequired,
+// };
 
 function App() {
   return (
