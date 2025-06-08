@@ -203,8 +203,16 @@ function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/games/:id" element={<Desc />} />
           <Route path='/landing' element={<LandingPage/>}/>
-          <Route path='/games/filter/:category' element={<GameByTag></GameByTag>}/>
-          <Route path='/games' element={<AllGames></AllGames>}/>
+          <Route path='/games/filter/:category' element={
+            <ProtectedRoute>
+              <GameByTag />
+            </ProtectedRoute>
+          }/>
+          <Route path='/games' element={
+            <ProtectedRoute>
+              <AllGames />
+            </ProtectedRoute>
+          }/>
         </Routes>
       </Router>
     </ThemeProvider>
