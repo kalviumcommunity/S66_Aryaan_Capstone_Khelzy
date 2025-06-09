@@ -67,7 +67,6 @@ const SlidingDoorLoginPage = () => {
         } catch (error) {
             const errorMessage = error.response?.data?.message || 'Registration failed';
             setError(errorMessage);
-            console.log(`Failed with ${API_URL}:`, error);
             return;
         }
 
