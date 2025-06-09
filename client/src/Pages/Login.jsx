@@ -273,7 +273,7 @@ const SlidingDoorLoginPage = () => {
                       
                       <div className="mt-6">
                         <button 
-                          onClick={() => window.location.href = `${API_URL}/auth/google`}
+                          onClick={handleGoogleLogin}
                           className="w-full inline-flex justify-center py-2 px-4 border border-white/20 rounded-lg shadow-sm bg-white/5 hover:bg-white/15 hover:border-white/30 hover:shadow-md transition-all duration-300"
                         >
                           <FaGoogle className={`h-5 w-5 ${isDarkMode ? 'text-white' : 'text-gray-800'}`} />
