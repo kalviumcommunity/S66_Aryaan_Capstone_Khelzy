@@ -219,7 +219,7 @@ const refreshAccessToken = async (req, res) => {
 
         // Set new tokens in cookies
         res.cookie('token', newAccessToken, cookieOptions);
-        res.cookie('refreshToken', newRefreshCookieOptions);
+        res.cookie('refreshToken', newRefreshToken, refreshCookieOptions);
 
         res.json({
             success: true,
