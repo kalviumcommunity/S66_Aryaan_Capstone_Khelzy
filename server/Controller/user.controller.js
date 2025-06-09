@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { UserModel } = require('../Model/user.model');
-const { createTokens } = require('../MiddleWare/auth');
+const { UserModel } = require('../models/user.model');
+const { createTokens } = require('../MiddleWare/authMiddleware');
 
 
 
@@ -12,7 +12,7 @@ const register = async (req, res) => {
         // Check if user already exists
         const existingUser = await UserModel.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ msg: 'User already exists' });
+            return res.status(400).json({ message: 'User already exists' });
         }
 
         const hash = await bcrypt.hash(password, 12);
@@ -20,13 +20,13 @@ const register = async (req, res) => {
             name, 
             email, 
             password: hash,
-
+           
         });
         await user.save();
         
         res.status(201).json({ 
             success: true,
-            msg: 'User registered successfully',
+            message: 'User registered successfully',
             user : user
         });
     } catch (error) {
@@ -46,7 +46,7 @@ const login = async (req, res) => {
         if (!user) {
             return res.status(404).json({ 
                 success: false,
-                msg: 'User not found' 
+                message: 'User not found' 
             });
         }
 
@@ -54,7 +54,7 @@ const login = async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ 
                 success: false,
-                msg: 'Invalid credentials' 
+                message: 'Invalid credentials' 
             });
         }
 
@@ -66,8 +66,8 @@ const login = async (req, res) => {
             secure: true,
             sameSite: 'none',
             path: '/',
-            domain: process.env.NODE_ENV === 'production' ? process.env.COOKIE_DOMAIN : undefined,
-            maxAge: 3600000 // 1 hour
+            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+            maxAge: 28800000 // 8 hours
         };
 
         const refreshCookieOptions = {
@@ -138,7 +138,7 @@ const logout = async (req, res) => {
 const getCurrentUser = async (req, res) => {
     try {
         // Get userId from token
-        const userId = req.user.userId;
+        const userId = req.user._id;
         
         // Fetch the complete user data from database
         const user = await UserModel.findById(userId);
@@ -167,6 +167,17 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
+/**
+ * Check if the user is authenticated without returning user data
+ * Useful for simple auth checks on protected routes
+ */
+const checkAuth = async (req, res) => {
+    // If this function is reached, the user is authenticated (verifyToken middleware)
+    res.status(200).json({
+        success: true,
+        isAuthenticated: true
+    });
+};
 
 const refreshAccessToken = async (req, res) => {
     try {
@@ -179,9 +190,7 @@ const refreshAccessToken = async (req, res) => {
             });
         }
 
-
         const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-
         const user = await UserModel.findById(decoded.userId);
 
         if (!user) {
@@ -209,10 +218,8 @@ const refreshAccessToken = async (req, res) => {
         };
 
         // Set new tokens in cookies
-         res.cookie('token', newAccessToken, cookieOptions);
-
-         res.cookie('refreshToken', newRefreshToken , refreshCookieOptions);
-
+        res.cookie('token', newAccessToken, cookieOptions);
+        res.cookie('refreshToken', newRefreshCookieOptions);
 
         res.json({
             success: true,
@@ -233,6 +240,4 @@ const refreshAccessToken = async (req, res) => {
     }
 };
 
-
-module.exports = { register, login, logout, getCurrentUser, refreshAccessToken };
-
+module.exports = { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken };

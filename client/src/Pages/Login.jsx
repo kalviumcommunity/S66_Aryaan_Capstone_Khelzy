@@ -296,12 +296,12 @@ const SlidingDoorLoginPage = () => {
 
                       <button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isLoading} // Added disable state
                         className={`w-full bg-gradient-to-r from-[#06c1ff] to-[#0b8fd8] text-white py-3 px-4 rounded-lg 
                         ${
                           isLoading
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:translate-y-[-2px] hover:shadow-lg hover:shadow-[#06c1ff]/40"
+                            ? "opacity-50 cursor-not-allowed" // When loading
+                            : "hover:translate-y-[-2px] hover:shadow-lg hover:shadow-[#06c1ff]/40" // When not loading
                         } 
                         transition-all duration-300 flex items-center justify-center group font-semibold`}
                       >
@@ -609,10 +609,19 @@ const SlidingDoorLoginPage = () => {
 
                       <button
                         type="submit"
-                        className="w-full bg-gradient-to-r from-[#06c1ff] to-[#0b8fd8] text-white py-3 px-4 rounded-lg hover:translate-y-[-2px] hover:shadow-lg hover:shadow-[#06c1ff]/40 transition-all duration-300 flex items-center justify-center group font-semibold"
+                        disabled={isLoading}
+                        className={`w-full bg-gradient-to-r from-[#06c1ff] to-[#0b8fd8] text-white py-3 px-4 rounded-lg 
+                        ${
+                          isLoading
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:translate-y-[-2px] hover:shadow-lg hover:shadow-[#06c1ff]/40"
+                        } 
+                        transition-all duration-300 flex items-center justify-center group font-semibold`}
                       >
-                        <span>Create Account</span>
-                        <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                        {isLoading ? "Creating account..." : "Create Account"}
+                        {!isLoading && (
+                          <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                        )}
                       </button>
                     </motion.form>
 
