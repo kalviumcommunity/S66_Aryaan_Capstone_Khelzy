@@ -53,7 +53,7 @@ const SlidingDoorLoginPage = () => {
     e.preventDefault();
     setError('');
         try {
-            const response = await axios.post(`${API_URL}/user/register`, {
+            const response = await axios.post(`${API_URL}/user/register`, signupData, {
               
                 withCredentials: true,
 
