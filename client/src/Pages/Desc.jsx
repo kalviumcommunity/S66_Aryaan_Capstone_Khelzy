@@ -76,11 +76,12 @@ const Desc = () => {
             `${API_URL}/games/filter/${game.category}?limit=4`,
             { withCredentials: true }
           );
-          
+          console.log(game.category);
+
           const filteredGames = relatedResponse.data.games.filter(
             (g) => g._id !== id
           );
-          
+          // console.log(relatedResponse)
           setRelatedGames(filteredGames.slice(0, 3));
 
           const elapsedTime = Date.now() - startTime;
@@ -135,6 +136,7 @@ const Desc = () => {
     e.preventDefault();
 
     if (!addComments.trim()) {
+      // Fixed: added parentheses to trim()
       return;
     }
 
@@ -187,7 +189,7 @@ const Desc = () => {
     fetchUser();
   }, []);
 
-  const deleteComment  = async (commentId) => {
+  const deletComment = async (commentId) => {
     try {
       await axios.delete(`${API_URL}/comments/${commentId}`, {
         withCredentials: true,
@@ -636,7 +638,7 @@ const Desc = () => {
                                       </button>
                                       <button
                                         onClick={() =>
-                                          deleteComment(comment._id)
+                                          deletComment(comment._id)
                                         }
                                         className="text-red-500 text-sm hover:text-red-400 hover:underline flex items-center gap-1"
                                       >
