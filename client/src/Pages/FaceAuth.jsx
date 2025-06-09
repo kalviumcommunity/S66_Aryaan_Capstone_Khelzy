@@ -70,7 +70,13 @@ const FaceAuth = () => {
                     videoRef.current.srcObject = stream;
                 }
             })
-            .catch((err) => console.error("Camera access error:", err));
+            .catch((err) => 
+                console.error("Camera access error:", err),
+                setVerificationStatus({
+                    success:false,
+                    message:"Camera access denied. Please allow camera permissions to use face authentication."
+                })
+        );
     };
 
     const stopCamera = () => {
