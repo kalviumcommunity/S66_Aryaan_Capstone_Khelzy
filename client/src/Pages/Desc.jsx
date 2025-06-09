@@ -189,7 +189,7 @@ const Desc = () => {
     fetchUser();
   }, []);
 
-  const deletComment = async (commentId) => {
+  const deleteComment  = async (commentId) => {
     try {
       await axios.delete(`${API_URL}/comments/${commentId}`, {
         withCredentials: true,
@@ -638,7 +638,7 @@ const Desc = () => {
                                       </button>
                                       <button
                                         onClick={() =>
-                                          deletComment(comment._id)
+                                          deleteComment (comment._id)
                                         }
                                         className="text-red-500 text-sm hover:text-red-400 hover:underline flex items-center gap-1"
                                       >
