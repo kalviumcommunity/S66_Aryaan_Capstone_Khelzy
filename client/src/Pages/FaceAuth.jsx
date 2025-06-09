@@ -98,7 +98,13 @@ const FaceAuth = () => {
     };
 
     const register = async () => {
-        if (!email) return alert("Enter email!");
+        if (!email){
+            setVerificationStatus({
+                success:false,
+                message:"Please enter your email address"
+            });
+            return
+        }
         setIsVerifying(true);
 
         try {
