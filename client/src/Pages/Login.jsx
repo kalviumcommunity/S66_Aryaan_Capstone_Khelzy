@@ -75,8 +75,8 @@ const SlidingDoorLoginPage = () => {
         error.response?.data?.message || "Registration failed";
       setError(errorMessage);
       return;
-    }finally {
-        setIsLoading(false);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -489,7 +489,7 @@ const SlidingDoorLoginPage = () => {
                 >
                   <div className={`max-w-md mx-auto w-full`}>
                     <motion.h2
-                      className={`text-3xl md:text-4xl lg:text-5xl font-bold mb-2${
+                      className={`text-3xl md:text-4xl lg:text-5xl font-bold mb-2 ${
                         isDarkMode ? "text-white" : "text-black"
                       }`}
                       initial={{ opacity: 0, y: -20 }}
