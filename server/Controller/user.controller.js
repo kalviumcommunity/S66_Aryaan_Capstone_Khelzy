@@ -137,8 +137,14 @@ const logout = async (req, res) => {
  */
 const getCurrentUser = async (req, res) => {
     try {
-        // Get userId from token
-        const userId = req.user._id;
+        // Get userId from token with null check
+        const userId = req.user?._id;
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'User not authenticated'
+            });
+        }
         
         // Fetch the complete user data from database
         const user = await UserModel.findById(userId);
