@@ -62,7 +62,7 @@ const verifyAuth = async () => {
         .map(r => r.value.json().catch(() => ({ authenticated: false })))
     );
 
-    return validResponses.length > 0 && validResponses.some(data => data.authenticated === true);
+    return validResponses.some(data => data.authenticated !== false);
 
   } catch (error) {
     console.error('Auth verification failed:', error);

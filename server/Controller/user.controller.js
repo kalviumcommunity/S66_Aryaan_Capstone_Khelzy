@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { UserModel } = require('../models/user.model');
-const { createTokens } = require('../MiddleWare/authMiddleware');
+const { UserModel } = require('../Model/user.model');
+const { createTokens } = require('../MiddleWare/auth');
 
 
 

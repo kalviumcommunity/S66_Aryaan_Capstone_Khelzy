@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.8",
     "axios": "^1.9.0",
+    "face-api.js": "^0.22.2",
     "framer-motion": "^12.16.0",
     "lucide-react": "^0.513.0",
     "react": "^19.1.0",
