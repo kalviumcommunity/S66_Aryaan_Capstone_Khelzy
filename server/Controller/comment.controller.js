@@ -100,7 +100,8 @@
       // Use proper logging service instead of console.error in production
       // logger.error('Delete error:', error);
       res.status(500).json({
-        error: 'Failed to delete comment'
+        error: 'Failed to delete comment',
+        details: error.message
       });
     }
   }
