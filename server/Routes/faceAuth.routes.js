@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { signup, login, verifyFace, verifyAuth } = require('../controller/faceAuth.controller');
+const { signup, login, verifyFace, verifyAuth } = require('../Controller/faceAuth.controller');
 
 router.post('/face/signup', signup);
 router.post('/face/login', login);

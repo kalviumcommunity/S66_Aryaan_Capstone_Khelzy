@@ -94,9 +94,9 @@
       
 
     }catch(error){
-      console.error('Update error:', error);
+      console.error('Delete error:', error);
       res.status(500).json({
-        error: 'Failed to update comment',
+        error: 'Failed to delete comment',
         details: error.message
       });
     }
