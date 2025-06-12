@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { API_URL } from "../config";
+import { toast } from "react-toastify";
 
 const Desc = () => {
   const { id } = useParams();
@@ -190,6 +191,10 @@ const Desc = () => {
   }, []);
 
   const deleteComment = async (commentId) => {
+    if (!window.confirm("Are you sure you want to delete this comment?")) {
+      return;
+    }
+    
     try {
       await axios.delete(`${API_URL}/comments/${commentId}`, {
         withCredentials: true,
@@ -198,9 +203,12 @@ const Desc = () => {
       setComments(prevComments => 
         prevComments.filter(comment => comment._id !== commentId)
       );
+      
+      toast.success('Comment deleted successfully');
     } catch (error) {
       console.error("Failed to delete comment:", error);
       setError(error.message || "Failed to delete comment");
+      toast.error('Failed to delete comment');
     }
   };
   const updateComment = async (commentId) => {
