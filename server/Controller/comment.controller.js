@@ -1,4 +1,4 @@
-  // controllers/commentController.js
+// controllers/commentController.js
   const Comment = require('../models/comment.model');
 
   const addComment = async (req, res) => {
@@ -99,8 +99,7 @@
     }catch(error){
       console.error('Delete error:', error);
       res.status(500).json({
-        error: 'Failed to delete comment',
-        details: error.message
+        error: 'Failed to delete comment'
       });
     }
   }
