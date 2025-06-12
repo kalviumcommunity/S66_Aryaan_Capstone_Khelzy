@@ -243,9 +243,11 @@ const Desc = () => {
       setComments(updatedCommentsResponse.data);
       setEditingCommentId(null);
       setEditText("");
+      toast.success('Comment updated successfully');
     } catch (error) {
       console.error("Failed to update comment:", error);
       setError(error.message || "Failed to update comment");
+      toast.error('Failed to update comment');
     }
   };
 
@@ -612,7 +614,8 @@ const Desc = () => {
                                 <>
                                   <div className="flex items-center gap-3 mb-2">
                                     <span
-                                      className={`font-semibold text-lg ${theme.primary}`}
+                                      className={`font-se
+                                      mibold text-lg ${theme.primary}`}
                                     >
                                       {comment.user?.name}
                                     </span>
