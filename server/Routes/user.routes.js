@@ -1,6 +1,6 @@
 const express = require('express');
 const passport = require('passport');
-const { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken } = require('../controller/user.controller');
+const { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken } = require('../Controller/user.controller');
 const { verifyToken, createTokens } = require('../MiddleWare/authMiddleware');
 const { UserModel } = require('../models/user.model');
 

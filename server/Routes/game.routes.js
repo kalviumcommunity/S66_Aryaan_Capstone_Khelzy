@@ -9,7 +9,7 @@ const {
   updateGameCount,
   getAllGameCounts,
   gameByCategory
-} = require("../controller/game.controller");
+} = require("../Controller/game.controller");
 const { verifyToken } = require("../MiddleWare/authMiddleware");
 
 const gameRouter = express.Router();
