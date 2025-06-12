@@ -22,9 +22,6 @@
     "face-api.js": "^0.22.2",
     "framer-motion": "^12.16.0",
     "lucide-react": "^0.513.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-toastify": "^11.0.5",
     "tailwindcss": "^4.1.8"
   },
   "devDependencies": {
