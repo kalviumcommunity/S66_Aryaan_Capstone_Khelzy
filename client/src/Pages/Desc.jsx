@@ -189,18 +189,15 @@ const Desc = () => {
     fetchUser();
   }, []);
 
-  const deleteComment  = async (commentId) => {
+  const deleteComment = async (commentId) => {
     try {
       await axios.delete(`${API_URL}/comments/${commentId}`, {
         withCredentials: true,
       });
 
-      const updatedCommentsResponse = await axios.get(
-        `${API_URL}/comments/${id}`,
-        { withCredentials: true }
+      setComments(prevComments => 
+        prevComments.filter(comment => comment._id !== commentId)
       );
-
-      setComments(updatedCommentsResponse.data);
     } catch (error) {
       console.error("Failed to delete comment:", error);
       setError(error.message || "Failed to delete comment");
