@@ -9,6 +9,7 @@ const { userRouter, authRouter } = require('./Routes/user.routes');
 const { gameRouter } = require('./Routes/game.routes');
 const commentRouter = require('./Routes/comment.routes')
 const faceAuthRoutes = require('./Routes/faceAuth.routes');
+
 const PORT = process.env.PORT;
 
 const app = express();
