@@ -12,6 +12,16 @@ const addComment = async (req, res) => {
     const { text } = req.body;
     const userId = req.user._id;
 
+    // Validate text content
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'Text field is required and cannot be empty' });
+    }
+
+    // Check if text exceeds maximum length
+    if (text.trim().length > 1000) {
+      return res.status(400).json({ error: 'Comment text cannot exceed 1000 characters' });
+    }
+
     const newComment = await Comment.create({ user:userId, gameId, text });
     res.status(201).json(newComment);
   } catch (error) {
@@ -51,6 +61,11 @@ const updateComment = async(req, res) => {
     // Check if text exists and is not just whitespace
     if (!text || !text.trim()) {
       return res.status(400).json({ error: 'Text field is required and cannot be empty' });
+    }
+
+    // Check if text exceeds maximum length
+    if (text.trim().length > 1000) {
+      return res.status(400).json({ error: 'Comment text cannot exceed 1000 characters' });
     }
 
     const updatedComment = await Comment.findOneAndUpdate(
