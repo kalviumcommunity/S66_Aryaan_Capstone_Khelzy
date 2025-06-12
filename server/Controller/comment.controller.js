@@ -48,6 +48,11 @@
         return res.status(400).json({ error: 'Text field is required and cannot be empty' });
       }
 
+      // Check if text exceeds maximum length
+      if (text.trim().length > 1000) {
+        return res.status(400).json({ error: 'Comment text cannot exceed 1000 characters' });
+      }
+
       const updatedComment = await Comment.findOneAndUpdate(
         { 
           _id: commentId,
