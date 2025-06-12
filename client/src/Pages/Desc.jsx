@@ -20,6 +20,7 @@ import {
 import { useTheme } from "../context/ThemeContext";
 import { API_URL } from "../config";
 import { toast } from "react-toastify";
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const Desc = () => {
   const { id } = useParams();
@@ -37,6 +38,8 @@ const Desc = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editText, setEditText] = useState("");
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -191,17 +194,18 @@ const Desc = () => {
   }, []);
 
   const deleteComment = async (commentId) => {
-    if (!window.confirm("Are you sure you want to delete this comment?")) {
-      return;
-    }
-    
+    setCommentToDelete(commentId);
+    setIsConfirmationOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/comments/${commentId}`, {
+      await axios.delete(`${API_URL}/comments/${commentToDelete}`, {
         withCredentials: true,
       });
 
       setComments(prevComments => 
-        prevComments.filter(comment => comment._id !== commentId)
+        prevComments.filter(comment => comment._id !== commentToDelete)
       );
       
       toast.success('Comment deleted successfully');
@@ -209,8 +213,17 @@ const Desc = () => {
       console.error("Failed to delete comment:", error);
       setError(error.message || "Failed to delete comment");
       toast.error('Failed to delete comment');
+    } finally {
+      setIsConfirmationOpen(false);
+      setCommentToDelete(null);
     }
   };
+
+  const handleCancelDelete = () => {
+    setIsConfirmationOpen(false);
+    setCommentToDelete(null);
+  };
+
   const updateComment = async (commentId) => {
     if (!editText.trim()) return;
 
@@ -876,6 +889,13 @@ const Desc = () => {
           </div>
         </div>
       </div>
+      <ConfirmationModal 
+        isOpen={isConfirmationOpen}
+        message="Are you sure you want to delete this comment?"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        theme={theme}
+      />
     </div>
   );
 };
