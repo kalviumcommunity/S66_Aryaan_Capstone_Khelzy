@@ -58,7 +58,7 @@
           new: true,
           runValidators: true 
         }
-      )
+      ).populate('user', 'name profilePicture')
 
       if (!updatedComment) {
         return res.status(404).json({ 
