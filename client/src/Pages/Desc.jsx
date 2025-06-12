@@ -34,6 +34,8 @@ const Desc = () => {
   const [addComments, setAddComments] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editText, setEditText] = useState("");
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -186,6 +188,48 @@ const Desc = () => {
 
     fetchUser();
   }, []);
+
+  const deleteComment  = async (commentId) => {
+    try {
+      await axios.delete(`${API_URL}/comments/${commentId}`, {
+        withCredentials: true,
+      });
+
+      const updatedCommentsResponse = await axios.get(
+        `${API_URL}/comments/${id}`,
+        { withCredentials: true }
+      );
+
+      setComments(updatedCommentsResponse.data);
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+      setError(error.message || "Failed to delete comment");
+    }
+  };
+  const updateComment = async (commentId) => {
+    if (!editText.trim()) return;
+
+    try {
+      await axios.put(
+        `${API_URL}/comments/${commentId}`,
+        { text: editText },
+        { withCredentials: true }
+      );
+
+      // Fetch updated comments
+      const updatedCommentsResponse = await axios.get(
+        `${API_URL}/comments/${id}`,
+        { withCredentials: true }
+      );
+
+      setComments(updatedCommentsResponse.data);
+      setEditingCommentId(null);
+      setEditText("");
+    } catch (error) {
+      console.error("Failed to update comment:", error);
+      setError(error.message || "Failed to update comment");
+    }
+  };
 
   const GameSkeleton = () => (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -512,17 +556,113 @@ const Desc = () => {
                               )}
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className={`font-semibold text-lg ${theme.primary}`}>
-                                  {comment.user?.name}
-                                </span>
-                                <span className={`text-sm ${theme.muted} bg-[#06c1ff]/10 px-2 py-0.5 rounded-full`}>
-                                  {new Date(comment.createdAt).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className={`${theme.secondary} text-base leading-relaxed`}>
-                                {comment.text}
-                              </p>
+                              {editingCommentId === comment._id ? (
+                                <form
+                                  onSubmit={(e) => {
+                                    e.preventDefault();
+                                    updateComment(comment._id);
+                                  }}
+                                >
+                                  <input
+                                    type="text"
+                                    value={editText}
+                                    onChange={(e) =>
+                                      setEditText(e.target.value)
+                                    }
+                                    className={`flex-1 px-4 py-2.5 rounded-xl ${theme.cardBg} ${theme.border} border focus:border-[#06c1ff]/50 focus:outline-none ${theme.primary}`}
+                                  />
+                                  <div className="flex gap-2 mt-2">
+                                    <button
+                                      type="submit"
+                                      className="px-4 py-1.5 rounded-lg bg-[#06c1ff] text-white hover:bg-[#06c1ff]/90"
+                                    >
+                                      Save
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingCommentId(null);
+                                        setEditText("");
+                                      }}
+                                      className="px-4 py-1.5 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </form>
+                              ) : (
+                                <>
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <span
+                                      className={`font-semibold text-lg ${theme.primary}`}
+                                    >
+                                      {comment.user?.name}
+                                    </span>
+                                    <span
+                                      className={`text-sm ${theme.muted} bg-[#06c1ff]/10 px-2 py-0.5 rounded-full`}
+                                    >
+                                      {new Date(
+                                        comment.createdAt
+                                      ).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                  <p
+                                    className={`${theme.secondary} text-base leading-relaxed`}
+                                  >
+                                    {comment.text}
+                                  </p>
+                                  {comment.user._id === currentUser?.id && (
+                                    <div className="flex items-center gap-4 mt-2">
+                                      <button
+                                        onClick={() => {
+                                          setEditingCommentId(comment._id);
+                                          setEditText(comment.text);
+                                        }}
+                                        className="text-[#06c1ff] text-sm hover:text-[#06c1ff]/70 hover:underline flex items-center gap-1"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          deleteComment (comment._id)
+                                        }
+                                        className="text-red-500 text-sm hover:text-red-400 hover:underline flex items-center gap-1"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M3 6h18" />
+                                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                        </svg>
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
