@@ -79,6 +79,9 @@
 
   const deleteComment=async(req,res)=>{
     try{
+      if (!req.user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
       const{commentId} = req.params;
       const userId = req.user._id
 
