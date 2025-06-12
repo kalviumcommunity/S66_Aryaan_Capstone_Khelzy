@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { UserModel } = require('../Model/user.model');
+const { UserModel } = require('../models/user.model');
 
 const createTokens = (user) => {
     const tokenPayload = {
@@ -41,8 +41,7 @@ const verifyToken = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({ 
                 success: false, 
-                message: 'Access denied. Login to continue.',
-                
+                message: 'Access denied. Login to continue.' 
             });
         }
         

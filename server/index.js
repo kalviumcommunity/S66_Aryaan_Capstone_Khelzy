@@ -4,13 +4,12 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const passport = require('./config/passport');
-const MongoStore  = require('connect-mongo');
 const { connectDB } = require('./config/db');
 const { userRouter, authRouter } = require('./routes/user.routes');
 const { gameRouter } = require('./routes/game.routes');
 const commentRouter = require('./routes/comment.routes')
 const faceAuthRoutes = require('./routes/faceAuth.routes');
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
 const app = express();
 
@@ -40,10 +39,6 @@ app.use(session({
     sameSite: 'none',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   },
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URL,
-    collectionName: 'sessions'
-  })
 }));
 
 // Initialize Passport and restore authentication state from session
@@ -62,7 +57,7 @@ const startServer = async () => {
   try {
     await connectDB();
     app.listen(PORT, () => {
-      console.log('✅ Server running on port 8080');
+      console.log(`✅ Server running on port ${PORT}`);
     });
   } catch (error) {
     console.error('❌ Server initialization failed:', error);
