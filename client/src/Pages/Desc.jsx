@@ -139,10 +139,12 @@ const Desc = () => {
   const postComments = async (e) => {
     e.preventDefault();
 
-    if (!addComments.trim()) {
-      // Fixed: added parentheses to trim()
+    if (!currentUser) {
+      toast.error('Please login to post comments');
       return;
     }
+
+    if (!addComments.trim()) return;
 
     setCommentLoading(true);
     try {
@@ -165,8 +167,12 @@ const Desc = () => {
       // Clear the input field
       setAddComments("");
     } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error('Please login to post comments');
+      } else {
+        toast.error(error.message || 'Failed to post comment');
+      }
       console.error("Failed to post comment:", error);
-      setError(error.message || "Failed to post comment");
     } finally {
       setCommentLoading(false);
     }
@@ -186,7 +192,9 @@ const Desc = () => {
         setCurrentUser(response.data.user);
         console.log(response.data.user);
       } catch (error) {
-        console.error("Failed to fetch user:", error);
+        if (error.response?.status !== 401) {
+          console.error("Failed to fetch user:", error);
+        }
       }
     };
 
@@ -194,6 +202,11 @@ const Desc = () => {
   }, []);
 
   const deleteComment = async (commentId) => {
+    if (!currentUser) {
+      toast.error('Please login to delete comments');
+      return;
+    }
+    
     setCommentToDelete(commentId);
     setIsConfirmationOpen(true);
   };
@@ -225,6 +238,11 @@ const Desc = () => {
   };
 
   const updateComment = async (commentId) => {
+    if (!currentUser) {
+      toast.error('Please login to edit comments');
+      return;
+    }
+
     if (!editText.trim()) return;
 
     try {
@@ -245,9 +263,12 @@ const Desc = () => {
       setEditText("");
       toast.success('Comment updated successfully');
     } catch (error) {
-      console.error("Failed to update comment:", error);
+      if (error.response?.status === 401) {
+        toast.error('Please login to edit comments');
+      } else {
+        toast.error(error.message || 'Failed to update comment');
+      }
       setError(error.message || "Failed to update comment");
-      toast.error('Failed to update comment');
     }
   };
 
