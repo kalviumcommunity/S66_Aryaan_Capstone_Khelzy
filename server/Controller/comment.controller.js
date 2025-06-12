@@ -69,7 +69,8 @@
       res.status(200).json(updatedComment);
 
     } catch (error) {
-      console.error('Update error:', error);
+      // Use proper logging service instead of console.error in production
+      // logger.error('Update error:', error);
       res.status(500).json({
         error: 'Failed to update comment',
         details: error.message
@@ -95,9 +96,9 @@
         }
       res.status(200).json({success:true,message:"Comment deleted"})
       
-
     }catch(error){
-      console.error('Delete error:', error);
+      // Use proper logging service instead of console.error in production
+      // logger.error('Delete error:', error);
       res.status(500).json({
         error: 'Failed to delete comment'
       });
