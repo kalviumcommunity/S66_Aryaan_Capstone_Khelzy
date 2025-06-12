@@ -1,38 +1,34 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { Play, Star, Eye } from 'lucide-react';
-import axios from 'axios'
 import { API_URL } from '../config';
+import axios from 'axios'
 
 const GameCard = ({game}) => {
-  const [localCount, setLocalCount] = useState(game.count || 0);
+  const [localCount, setLocalCount] = useState(game.count);
   const [isHovered, setIsHovered] = useState(false);
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleCardClick = async (e) => {
     e.preventDefault();
     if (!game._id) return;
 
     try {
-
-      const response = await axios.post(`${API_URL}/games/${game._id}/count`, {}, {
-        withCredentials: true
-      })
-
-      if (!response.data) {
-        throw new Error('Failed to update game count');
+      const response = await axios.put(`${API_URL}/games/${game._id}/count`, {
+          withCredentials: true
+      });
+      
+      if (response.ok) {
+        setLocalCount(prev=>prev+1);
       }
       
-      
-        
-        setLocalCount(response.data.count);
-     
       // Navigate to game details page
-      // navigate(`/games/${game._id}`);
+      navigate(`/games/${game._id}`);
     } catch (error) {
       console.error('Error updating game count:', error);
       // Still navigate even if count update fails
-      // navigate(`/games/${game._id}`);
+      navigate(`/games/${game._id}`);
     }
   };
 
@@ -106,5 +102,18 @@ const GameCard = ({game}) => {
   );
 };
 
+GameCard.propTypes = {
+  game: PropTypes.shape({
+    _id: PropTypes.string,
+    title: PropTypes.string.isRequired,
+    category: PropTypes.string,
+    rating: PropTypes.string,
+    thumb: PropTypes.string,
+    url: PropTypes.string,
+    badge: PropTypes.string,
+    count: PropTypes.number
+  }).isRequired,
+  isNewRelease: PropTypes.bool
+};
 
 export default GameCard;

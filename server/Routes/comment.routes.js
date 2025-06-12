@@ -1,10 +1,12 @@
 const express = require('express');
-const commentRouter = express.Router();
-const { addComment, getCommentsByGame,deleteAll } = require('../Controller/comment.controller')
-const {verifyToken}  = require('../MiddleWare/auth')
+const router = express.Router();
+const { addComment, getCommentsByGame,updateComment,deleteComment } = require('../Controller/comment.controller')
+const {verifyToken}  = require('../MiddleWare/authMiddleware')
 
-commentRouter.post('/:gameId', verifyToken,addComment);        // POST a comment for a game
-commentRouter.get('/:gameId',getCommentsByGame);  // GET all comments for a game
-commentRouter.delete('/',deleteAll)
+router.post('/:gameId', verifyToken,addComment);        // POST a comment for a game
+router.get('/:gameId',getCommentsByGame);  // GET all comments for a game
+router.put('/:commentId',verifyToken,updateComment)
+router.delete('/:commentId',verifyToken,deleteComment)
 
-module.exports = {commentRouter};
+
+module.exports = router;
