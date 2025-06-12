@@ -86,12 +86,12 @@
       const{commentId} = req.params;
       const userId = req.user._id
 
-      const deleteComment= await Comment.findOneAndDelete(
+      const deletedComment= await Comment.findOneAndDelete(
         {_id:commentId,
           user:userId
         })
         
-        if(!deleteComment){
+        if(!deletedComment){
           return res.status(404).json({message:"Comment not found"})
         }
       res.status(200).json({success:true,message:"Comment deleted"})
