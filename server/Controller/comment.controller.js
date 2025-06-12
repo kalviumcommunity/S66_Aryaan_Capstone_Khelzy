@@ -43,9 +43,9 @@
       const userId = req.user._id;
       const { text } = req.body;
       
-      // Check if text exists in request body
-      if (!text) {
-        return res.status(400).json({ error: 'Text field is required ' });
+      // Check if text exists and is not just whitespace
+      if (!text || !text.trim()) {
+        return res.status(400).json({ error: 'Text field is required and cannot be empty' });
       }
 
       const updatedComment = await Comment.findOneAndUpdate(
