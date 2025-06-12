@@ -44,7 +44,7 @@
       const { text } = req.body;
       
       // Check if text exists in request body
-      if (!req.body.text) {
+      if (!text) {
         return res.status(400).json({ error: 'Text field is required ' });
       }
 
