@@ -183,58 +183,58 @@ const Desc = () => {
   };
 
   const handleShare = async () => {
-  const url = window.location.href;
+    const url = window.location.href;
 
-  const copyToClipboard = (text) => {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.left = '-999999px';
-    textArea.style.top = '-999999px';
-    textArea.style.opacity = '0';
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-      document.execCommand('copy');
-      toast("URL copied to clipboard!");
-    } catch (err) {
-      toast("Failed to copy URL.");
-    }
-    document.body.removeChild(textArea);
-  };
+    const manualCopy = () => {
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast("URL copied to clipboard!");
+      } catch (err) {
+        toast("Failed to copy URL.");
+      }
+      document.body.removeChild(textArea);
+    };
 
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: document.title,
-        text: "Check this out!",
-        url: url,
-      });
-      toast.success("Shared successfully!");
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        // User cancelled sharing - no action needed
-        return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: document.title,
+          text: "Check this out!",
+          url: url,
+        });
+        toast.success("Shared successfully!");
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          // User cancelled sharing - no action needed
+          return;
+        }
+        console.error("Error sharing:", err);
+        if (err.name === 'NotAllowedError') {
+          toast.error("Permission denied for sharing");
+        } else if (err.name === 'DataError') {
+          toast.error("Invalid share data");
+        } else {
+          toast.error("Failed to share");
+        }
       }
-      console.error("Error sharing:", err);
-      if (err.name === 'NotAllowedError') {
-        toast.error("Permission denied for sharing");
-      } else if (err.name === 'DataError') {
-        toast.error("Invalid share data");
-      } else {
-        toast.error("Failed to share");
-      }
-    }
-  } else {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(url)
-        .then(() => toast("URL copied to clipboard!"))
-        .catch(() => copyToClipboard(url));
     } else {
-      copyToClipboard(url);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url)
+          .then(() => toast("URL copied to clipboard!"))
+          .catch(() => manualCopy());
+      } else {
+        manualCopy();
+      }
     }
-  }
-};
+  };
 
 
   // Add useEffect to fetch user data
