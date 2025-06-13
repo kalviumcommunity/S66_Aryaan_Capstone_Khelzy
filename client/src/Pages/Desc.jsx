@@ -225,8 +225,8 @@ const Desc = () => {
     try {
       if (!isLiked) {
         const response = await axios.post(
-          `${API_URL}/fav/like/${id}`,  // Changed to match backend route
-          { userId: currentUser.id },
+          `${API_URL}/fav/like/${id}`,
+          {},
           { withCredentials: true }
         );
         if (response.data.liked) {
