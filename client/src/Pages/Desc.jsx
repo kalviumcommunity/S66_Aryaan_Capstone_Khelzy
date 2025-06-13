@@ -205,10 +205,32 @@ const Desc = () => {
         .then(() => toast("URL copied to clipboard!"))
         .catch((err) => {
           console.error("Clipboard copy failed:", err);
-          toast("Failed to copy URL.");
+          // Fallback to manual copy
+          const textArea = document.createElement('textarea');
+          textArea.value = url;
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand('copy');
+            toast("URL copied to clipboard!");
+          } catch (fallbackErr) {
+            toast("Failed to copy URL.");
+          }
+          document.body.removeChild(textArea);
         });
     } else {
-      toast("Sharing not supported on this browser.");
+      // Manual copy fallback
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast("URL copied to clipboard!");
+      } catch (err) {
+        toast("Sharing not supported on this browser.");
+      }
+      document.body.removeChild(textArea);
     }
   }
 };
