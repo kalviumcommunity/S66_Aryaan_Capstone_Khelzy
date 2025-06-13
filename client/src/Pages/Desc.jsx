@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { API_URL } from "../config";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from 'react-toastify';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 const Desc = () => {
@@ -181,6 +181,61 @@ const Desc = () => {
     setIsLiked(!isLiked);
     // You could implement API call to save like status
   };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+
+    const manualCopy = () => {
+      const textArea = document.createElement('textarea');
+      textArea.value = url;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        toast("URL copied to clipboard!");
+      } catch (err) {
+        toast("Failed to copy URL.",err);
+      }
+      document.body.removeChild(textArea);
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: document.title,
+          text: "Check this out!",
+          url: url,
+        });
+        toast.success("Shared successfully!");
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          // User cancelled sharing - no action needed
+          return;
+        }
+        console.error("Error sharing:", err);
+        if (err.name === 'NotAllowedError') {
+          toast.error("Permission denied for sharing");
+        } else if (err.name === 'DataError') {
+          toast.error("Invalid share data");
+        } else {
+          toast.error("Failed to share");
+        }
+      }
+    } else {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url)
+          .then(() => toast("URL copied to clipboard!"))
+          .catch(() => manualCopy());
+      } else {
+        manualCopy();
+      }
+    }
+  };
+
 
   // Add useEffect to fetch user data
   useEffect(() => {
@@ -433,6 +488,7 @@ const Desc = () => {
                   <span>{isLiked ? "Liked" : "Like"}</span>
                 </button>
                 <button
+                  onClick={handleShare}
                   className={`px-4 py-2 rounded-lg flex items-center gap-2 ${theme.cardBg} ${theme.border} ${theme.secondary} border hover:bg-[#06c1ff]/10 hover:border-[#06c1ff]/30 hover:text-[#06c1ff] transition-all duration-300`}
                 >
                   <Share2 size={18} />
@@ -919,6 +975,51 @@ const Desc = () => {
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         theme={theme}
+      />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={theme.mode}
+        toastStyle={{
+          backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#ffffff',
+          color: theme.mode === 'dark' ? '#ffffff' : '#000000',
+          borderWidth: '2px',
+          borderStyle: 'solid',
+          borderColor: 'rgba(6, 193, 255, 0.2)', 
+          borderRadius: '12px',
+          backdropFilter: 'blur(8px)',
+        }}
+        progressStyle={{
+          background: '#06c1ff'
+        }}
+        closeButton={({ closeToast }) => (
+          <button 
+            onClick={closeToast}
+            className="p-1 rounded-lg hover:bg-[#06c1ff]/10 transition-colors"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="16" 
+              height="16" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        )}
       />
     </div>
   );
