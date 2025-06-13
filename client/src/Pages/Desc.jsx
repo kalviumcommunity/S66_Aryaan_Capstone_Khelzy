@@ -194,8 +194,10 @@ const Desc = () => {
       });
       toast("Shared successfully!");
     } catch (err) {
-      console.error("Error sharing:", err);
-      toast("Failed to share.");
+      if (err.name !== 'AbortError') {
+        console.error("Error sharing:", err);
+        toast("Failed to share.");
+      }
     }
   } else {
     if (navigator.clipboard) {
