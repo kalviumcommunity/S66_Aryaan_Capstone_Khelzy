@@ -185,6 +185,24 @@ const Desc = () => {
   const handleShare = async () => {
   const url = window.location.href;
 
+  const copyToClipboard = (text) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      toast("URL copied to clipboard!");
+    } catch (err) {
+      toast("Failed to copy URL.");
+    }
+    document.body.removeChild(textArea);
+  };
+
   if (navigator.share) {
     try {
       await navigator.share({
@@ -203,34 +221,9 @@ const Desc = () => {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url)
         .then(() => toast("URL copied to clipboard!"))
-        .catch((err) => {
-          console.error("Clipboard copy failed:", err);
-          // Fallback to manual copy
-          const textArea = document.createElement('textarea');
-          textArea.value = url;
-          document.body.appendChild(textArea);
-          textArea.select();
-          try {
-            document.execCommand('copy');
-            toast("URL copied to clipboard!");
-          } catch (fallbackErr) {
-            toast("Failed to copy URL.");
-          }
-          document.body.removeChild(textArea);
-        });
+        .catch(() => copyToClipboard(url));
     } else {
-      // Manual copy fallback
-      const textArea = document.createElement('textarea');
-      textArea.value = url;
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        toast("URL copied to clipboard!");
-      } catch (err) {
-        toast("Sharing not supported on this browser.");
-      }
-      document.body.removeChild(textArea);
+      copyToClipboard(url);
     }
   }
 };
