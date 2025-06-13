@@ -210,11 +210,19 @@ const Desc = () => {
         text: "Check this out!",
         url: url,
       });
-      toast("Shared successfully!");
+      toast.success("Shared successfully!");
     } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error("Error sharing:", err);
-        toast("Failed to share.");
+      if (err.name === 'AbortError') {
+        // User cancelled sharing - no action needed
+        return;
+      }
+      console.error("Error sharing:", err);
+      if (err.name === 'NotAllowedError') {
+        toast.error("Permission denied for sharing");
+      } else if (err.name === 'DataError') {
+        toast.error("Invalid share data");
+      } else {
+        toast.error("Failed to share");
       }
     }
   } else {
