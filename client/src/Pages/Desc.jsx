@@ -198,7 +198,7 @@ const Desc = () => {
         document.execCommand('copy');
         toast("URL copied to clipboard!");
       } catch (err) {
-        toast("Failed to copy URL.");
+        toast("Failed to copy URL.",err);
       }
       document.body.removeChild(textArea);
     };
