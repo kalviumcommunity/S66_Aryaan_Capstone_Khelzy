@@ -964,7 +964,7 @@ const Desc = () => {
         theme={theme.mode}
         toastStyle={{
           backgroundColor: theme.cardBg.split(' ')[0],
-          color: theme.primary.split(' ')[0],
+          color: theme.textColor.split(' ')[0],
           borderWidth: '2px',
           borderStyle: 'solid',
           borderColor: 'rgba(6, 193, 255, 0.2)',
