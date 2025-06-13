@@ -8,6 +8,7 @@ const { connectDB } = require('./Config/db');
 const { userRouter, authRouter } = require('./Routes/user.routes');
 const { gameRouter } = require('./Routes/game.routes');
 const commentRouter = require('./Routes/comment.routes')
+const likeRouter = require('./Routes/liked.routes')
 const faceAuthRoutes = require('./Routes/faceAuth.routes');
 
 const PORT = process.env.PORT;
@@ -21,7 +22,7 @@ app.use(cookieParser());
 // Enable CORS with specific origins and configuration
 // Update the CORS configuration
 app.use(cors({
-  origin: ' http://localhost:5173',
+  origin: 'http://localhost:5173',
   credentials: true,
   preflightContinue: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -52,6 +53,7 @@ app.use('/user', userRouter);
 app.use('/games', gameRouter);
 app.use('/comments',commentRouter)
 app.use('/faceAuth', faceAuthRoutes);
+app.use('/fav',likeRouter)
 
 // Start server
 const startServer = async () => {

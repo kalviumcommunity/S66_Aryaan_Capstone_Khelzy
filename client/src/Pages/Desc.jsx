@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { API_URL } from "../config";
-import { ToastContainer, toast } from 'react-toastify';
-import ConfirmationModal from '../components/ConfirmationModal';
+import { ToastContainer, toast } from "react-toastify";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 const Desc = () => {
   const { id } = useParams();
@@ -28,7 +28,7 @@ const Desc = () => {
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState();
   const [relatedGames, setRelatedGames] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
@@ -104,16 +104,32 @@ const Desc = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // Add useEffect to fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/user/me`, {
+          withCredentials: true,
+        });
+        setCurrentUser(response.data.user);
+        console.log(response.data.user);
+      } catch (error) {
+        if (error.response?.status !== 401) {
+          console.error("Failed to fetch user:", error);
+        }
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   //Fetch Comments
   useEffect(() => {
     const fetchComment = async () => {
       try {
-        const response = await axios.get(
-          `${API_URL}/comments/${id}`,
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${API_URL}/comments/${id}`, {
+          withCredentials: true,
+        });
 
         setComments(response.data);
       } catch (error) {
@@ -136,11 +152,32 @@ const Desc = () => {
     return () => window.removeEventListener("keydown", handleEscKey);
   }, [isFullscreen]);
 
+  // Update the checkIsLiked function
+  useEffect(() => {
+    const checkIsLiked = async () => {
+        if (!currentUser) return;
+        try {
+            const response = await axios.get(
+                `${API_URL}/fav/check/${id}`,
+                { withCredentials: true }
+            );
+            // Set isLiked to false if there's no status
+            setIsLiked(response.data.status || false);
+        } catch (error) {
+            console.error("Error checking like status:", error);
+            setIsLiked(false);
+        }
+    };
+
+    checkIsLiked();
+  }, [currentUser, id]);
+
+
   const postComments = async (e) => {
     e.preventDefault();
 
     if (!currentUser) {
-      toast.error('Please login to post comments');
+      toast.error("Please login to post comments");
       return;
     }
 
@@ -168,37 +205,65 @@ const Desc = () => {
       setAddComments("");
     } catch (error) {
       if (error.response?.status === 401) {
-        toast.error('Please login to post comments');
+        toast.error("Please login to post comments");
       } else {
-        toast.error(error.message || 'Failed to post comment');
+        toast.error(error.message || "Failed to post comment");
       }
       console.error("Failed to post comment:", error);
     } finally {
       setCommentLoading(false);
     }
   };
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    // You could implement API call to save like status
+
+  // Update the handleLike function
+  const handleLike = async () => {
+    if (!currentUser) {
+      toast.error("Please login to like games");
+      return;
+    }
+
+    try {
+      if (!isLiked) {
+        const response = await axios.post(
+          `${API_URL}/fav/like/${id}`,
+          {},
+          { withCredentials: true }
+        );
+        if (response.data.liked) {
+          setIsLiked(true);
+          toast.success(response.data.message);
+        }
+      } else {
+        const response = await axios.delete(
+          `${API_URL}/fav/unlike/${id}`,  // Changed to match backend route
+          { withCredentials: true }
+        );
+        setIsLiked(false);
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating like status:", error);
+      toast.error("Failed to update like status");
+    }
   };
 
   const handleShare = async () => {
     const url = window.location.href;
 
     const manualCopy = () => {
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = url;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-999999px';
-      textArea.style.top = '-999999px';
-      textArea.style.opacity = '0';
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      textArea.style.opacity = "0";
       document.body.appendChild(textArea);
       textArea.select();
       try {
-        document.execCommand('copy');
+        document.execCommand("copy");
         toast("URL copied to clipboard!");
       } catch (err) {
-        toast("Failed to copy URL.",err);
+        toast("Failed to copy URL.", err);
       }
       document.body.removeChild(textArea);
     };
@@ -212,14 +277,14 @@ const Desc = () => {
         });
         toast.success("Shared successfully!");
       } catch (err) {
-        if (err.name === 'AbortError') {
+        if (err.name === "AbortError") {
           // User cancelled sharing - no action needed
           return;
         }
         console.error("Error sharing:", err);
-        if (err.name === 'NotAllowedError') {
+        if (err.name === "NotAllowedError") {
           toast.error("Permission denied for sharing");
-        } else if (err.name === 'DataError') {
+        } else if (err.name === "DataError") {
           toast.error("Invalid share data");
         } else {
           toast.error("Failed to share");
@@ -227,7 +292,8 @@ const Desc = () => {
       }
     } else {
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(url)
+        navigator.clipboard
+          .writeText(url)
           .then(() => toast("URL copied to clipboard!"))
           .catch(() => manualCopy());
       } else {
@@ -236,32 +302,12 @@ const Desc = () => {
     }
   };
 
-
-  // Add useEffect to fetch user data
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/user/me`, {
-          withCredentials: true,
-        });
-        setCurrentUser(response.data.user);
-        console.log(response.data.user);
-      } catch (error) {
-        if (error.response?.status !== 401) {
-          console.error("Failed to fetch user:", error);
-        }
-      }
-    };
-
-    fetchUser();
-  }, []);
-
   const deleteComment = async (commentId) => {
     if (!currentUser) {
-      toast.error('Please login to delete comments');
+      toast.error("Please login to delete comments");
       return;
     }
-    
+
     setCommentToDelete(commentId);
     setIsConfirmationOpen(true);
   };
@@ -272,15 +318,15 @@ const Desc = () => {
         withCredentials: true,
       });
 
-      setComments(prevComments => 
-        prevComments.filter(comment => comment._id !== commentToDelete)
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment._id !== commentToDelete)
       );
-      
-      toast.success('Comment deleted successfully');
+
+      toast.success("Comment deleted successfully");
     } catch (error) {
       console.error("Failed to delete comment:", error);
       setError(error.message || "Failed to delete comment");
-      toast.error('Failed to delete comment');
+      toast.error("Failed to delete comment");
     } finally {
       setIsConfirmationOpen(false);
       setCommentToDelete(null);
@@ -294,7 +340,7 @@ const Desc = () => {
 
   const updateComment = async (commentId) => {
     if (!currentUser) {
-      toast.error('Please login to edit comments');
+      toast.error("Please login to edit comments");
       return;
     }
 
@@ -316,12 +362,12 @@ const Desc = () => {
       setComments(updatedCommentsResponse.data);
       setEditingCommentId(null);
       setEditText("");
-      toast.success('Comment updated successfully');
+      toast.success("Comment updated successfully");
     } catch (error) {
       if (error.response?.status === 401) {
-        toast.error('Please login to edit comments');
+        toast.error("Please login to edit comments");
       } else {
-        toast.error(error.message || 'Failed to update comment');
+        toast.error(error.message || "Failed to update comment");
       }
       setError(error.message || "Failed to update comment");
     }
@@ -736,7 +782,7 @@ const Desc = () => {
                                       </button>
                                       <button
                                         onClick={() =>
-                                          deleteComment (comment._id)
+                                          deleteComment(comment._id)
                                         }
                                         className="text-red-500 text-sm hover:text-red-400 hover:underline flex items-center gap-1"
                                       >
@@ -969,7 +1015,7 @@ const Desc = () => {
           </div>
         </div>
       </div>
-      <ConfirmationModal 
+      <ConfirmationModal
         isOpen={isConfirmationOpen}
         message="Are you sure you want to delete this comment?"
         onConfirm={handleConfirmDelete}
@@ -988,31 +1034,32 @@ const Desc = () => {
         pauseOnHover
         theme={theme.mode}
         toastStyle={{
-          backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#ffffff',
-          color: theme.mode === 'dark' ? '#ffffff' : '#000000',
-          borderWidth: '2px',
-          borderStyle: 'solid',
-          borderColor: 'rgba(6, 193, 255, 0.2)', 
-          borderRadius: '12px',
-          backdropFilter: 'blur(8px)',
+          backgroundColor:
+            theme.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "#ffffff",
+          color: theme.mode === "dark" ? "#ffffff" : "#000000",
+          borderWidth: "2px",
+          borderStyle: "solid",
+          borderColor: "rgba(6, 193, 255, 0.2)",
+          borderRadius: "12px",
+          backdropFilter: "blur(8px)",
         }}
         progressStyle={{
-          background: '#06c1ff'
+          background: "#06c1ff",
         }}
         closeButton={({ closeToast }) => (
-          <button 
+          <button
             onClick={closeToast}
             className="p-1 rounded-lg hover:bg-[#06c1ff]/10 transition-colors"
           >
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
               <line x1="18" y1="6" x2="6" y2="18"></line>
