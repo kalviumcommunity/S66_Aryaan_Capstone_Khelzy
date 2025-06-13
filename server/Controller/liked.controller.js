@@ -25,7 +25,10 @@ const unlikeGame = async(req,res) => {
     const userId = req.user.id
     const {gameId} = req.params
     try {
-        await Liked.deleteOne({userId, gameId})
+        const result = await Liked.deleteOne({userId, gameId})
+        if (result.deletedCount === 0) {
+            return res.status(404).json({liked: false, message: 'Like not found'})
+        }
         res.status(200).json({liked: false, message: 'Game unliked'})
     } catch(error) {
         res.status(500).json({error: error.message})
