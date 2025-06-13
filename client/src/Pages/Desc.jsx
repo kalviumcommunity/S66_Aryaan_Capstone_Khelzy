@@ -198,13 +198,16 @@ const Desc = () => {
       toast("Failed to share.");
     }
   } else {
-    // Fallback: copy to clipboard
-    navigator.clipboard.writeText(url)
-      .then(() => toast("URL copied to clipboard!"))
-      .catch((err) => {
-        console.error("Clipboard copy failed:", err);
-        toast("Failed to copy URL.");
-      });
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url)
+        .then(() => toast("URL copied to clipboard!"))
+        .catch((err) => {
+          console.error("Clipboard copy failed:", err);
+          toast("Failed to copy URL.");
+        });
+    } else {
+      toast("Sharing not supported on this browser.");
+    }
   }
 };
 
