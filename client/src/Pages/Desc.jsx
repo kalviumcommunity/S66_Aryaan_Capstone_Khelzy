@@ -963,11 +963,11 @@ const Desc = () => {
         pauseOnHover
         theme={theme.mode}
         toastStyle={{
-          backgroundColor: theme.cardBg.split(' ')[0],
-          color: theme.textColor.split(' ')[0],
+          backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#ffffff',
+          color: theme.mode === 'dark' ? '#ffffff' : '#000000',
           borderWidth: '2px',
           borderStyle: 'solid',
-          borderColor: 'rgba(6, 193, 255, 0.2)',
+          borderColor: 'rgba(6, 193, 255, 0.2)', 
           borderRadius: '12px',
           backdropFilter: 'blur(8px)',
         }}
