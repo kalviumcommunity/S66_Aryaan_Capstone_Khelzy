@@ -236,10 +236,7 @@ const Desc = () => {
       } else {
         const response = await axios.delete(
           `${API_URL}/fav/unlike/${id}`,  // Changed to match backend route
-          {
-            data: { userId: currentUser.id },
-            withCredentials: true
-          }
+          { withCredentials: true }
         );
         setIsLiked(false);
         toast.success(response.data.message);
