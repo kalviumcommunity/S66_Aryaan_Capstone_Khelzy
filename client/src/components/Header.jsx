@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Menu, X, Home, BarChart2, Grid, Gamepad, Sparkles } from 'lucide-react';
+import { Search, Menu, X, Home, BarChart2, Grid, Gamepad, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
 import axios from 'axios';
@@ -37,6 +37,7 @@ const Header = () => {
     { name: "Home", path: "/home", icon: <Home size={20} /> },
     { name: "Games", path: "/games", icon: <Gamepad size={20} /> },
     { name: "Top Charts", path: "/top-charts", icon: <BarChart2 size={20} /> },
+    { name: "Favorites" , path:'/favorites',icon:<Heart size={20}/>}
   ];
 
   // Control body scroll when mobile menu is open

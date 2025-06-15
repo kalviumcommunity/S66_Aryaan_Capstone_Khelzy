@@ -49,4 +49,15 @@ const checkTheLike = async(req,res) => {
     }
 }
 
-module.exports = {likeGame,unlikeGame,checkTheLike}
+const likedGames = async(req,res)=>{
+    const userId = req.user.id
+    const gameId = req.params
+    try{
+        const record = await Liked.find({userId,gameId})
+        res.status(200).json({record})
+    }catch(error){
+        res.status(500).json({error: error.message})
+    }
+}
+
+module.exports = {likeGame,unlikeGame,checkTheLike,likedGames}
