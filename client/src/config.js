@@ -5,7 +5,7 @@ export const fetchOptions = {
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Origin': 'https://s66-aryaan-capstone-khelzy.vercel.app/'
+    'Origin': 'https://s66-aryaan-capstone-khelzy.vercel.app'
   }
 };
 
