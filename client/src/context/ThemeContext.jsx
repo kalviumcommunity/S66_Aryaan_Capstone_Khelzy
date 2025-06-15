@@ -14,6 +14,8 @@ const themeConfig = {
         backgroundSecondary: 'bg-[#0b2d72]/90',
         border: 'border-white/10',
         cardBg: 'bg-white/5',
+        textColor: 'text-white',
+        mode: 'dark'
     },
     light: {
         primary: 'text-gray-900',
@@ -25,6 +27,8 @@ const themeConfig = {
         backgroundSecondary: 'bg-white',
         border: 'border-gray-200',
         cardBg: 'bg-white',
+        textColor: 'text-black',
+        mode: 'light'
     }
 };
 

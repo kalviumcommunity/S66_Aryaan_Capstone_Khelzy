@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { API_URL } from "../config";
+import { ToastContainer, toast } from "react-toastify";
+import ConfirmationModal from "../components/ConfirmationModal";
 
 const Desc = () => {
   const { id } = useParams();
@@ -26,7 +28,7 @@ const Desc = () => {
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState();
   const [relatedGames, setRelatedGames] = useState([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
@@ -34,6 +36,10 @@ const Desc = () => {
   const [addComments, setAddComments] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -98,16 +104,32 @@ const Desc = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // Add useEffect to fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/user/me`, {
+          withCredentials: true,
+        });
+        setCurrentUser(response.data.user);
+        console.log(response.data.user);
+      } catch (error) {
+        if (error.response?.status !== 401) {
+          console.error("Failed to fetch user:", error);
+        }
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   //Fetch Comments
   useEffect(() => {
     const fetchComment = async () => {
       try {
-        const response = await axios.get(
-          `${API_URL}/comments/${id}`,
-          {
-            withCredentials: true,
-          }
-        );
+        const response = await axios.get(`${API_URL}/comments/${id}`, {
+          withCredentials: true,
+        });
 
         setComments(response.data);
       } catch (error) {
@@ -130,13 +152,36 @@ const Desc = () => {
     return () => window.removeEventListener("keydown", handleEscKey);
   }, [isFullscreen]);
 
+  // Update the checkIsLiked function
+  useEffect(() => {
+    const checkIsLiked = async () => {
+        if (!currentUser) return;
+        try {
+            const response = await axios.get(
+                `${API_URL}/fav/check/${id}`,
+                { withCredentials: true }
+            );
+            // Set isLiked to false if there's no status
+            setIsLiked(response.data.status || false);
+        } catch (error) {
+            console.error("Error checking like status:", error);
+            setIsLiked(false);
+        }
+    };
+
+    checkIsLiked();
+  }, [currentUser, id]);
+
+
   const postComments = async (e) => {
     e.preventDefault();
 
-    if (!addComments.trim()) {
-      // Fixed: added parentheses to trim()
+    if (!currentUser) {
+      toast.error("Please login to post comments");
       return;
     }
+
+    if (!addComments.trim()) return;
 
     setCommentLoading(true);
     try {
@@ -159,33 +204,174 @@ const Desc = () => {
       // Clear the input field
       setAddComments("");
     } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error("Please login to post comments");
+      } else {
+        toast.error(error.message || "Failed to post comment");
+      }
       console.error("Failed to post comment:", error);
-      setError(error.message || "Failed to post comment");
     } finally {
       setCommentLoading(false);
     }
   };
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    // You could implement API call to save like status
+
+  // Update the handleLike function
+  const handleLike = async () => {
+    if (!currentUser) {
+      toast.error("Please login to like games");
+      return;
+    }
+
+    try {
+      if (!isLiked) {
+        const response = await axios.post(
+          `${API_URL}/fav/like/${id}`,
+          {},
+          { withCredentials: true }
+        );
+        if (response.data.liked) {
+          setIsLiked(true);
+          toast.success(response.data.message);
+        }
+      } else {
+        const response = await axios.delete(
+          `${API_URL}/fav/unlike/${id}`,  // Changed to match backend route
+          { withCredentials: true }
+        );
+        setIsLiked(false);
+        toast.success(response.data.message);
+      }
+    } catch (error) {
+      console.error("Error updating like status:", error);
+      toast.error("Failed to update like status");
+    }
   };
 
-  // Add useEffect to fetch user data
-  useEffect(() => {
-    const fetchUser = async () => {
+  const handleShare = async () => {
+    const url = window.location.href;
+
+    const manualCopy = () => {
+      const textArea = document.createElement("textarea");
+      textArea.value = url;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
       try {
-        const response = await axios.get(`${API_URL}/user/me`, {
-          withCredentials: true,
-        });
-        setCurrentUser(response.data.user);
-        console.log(response.data.user);
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
+        document.execCommand("copy");
+        toast("URL copied to clipboard!");
+      } catch (err) {
+        toast("Failed to copy URL.", err);
       }
+      document.body.removeChild(textArea);
     };
 
-    fetchUser();
-  }, []);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: document.title,
+          text: "Check this out!",
+          url: url,
+        });
+        toast.success("Shared successfully!");
+      } catch (err) {
+        if (err.name === "AbortError") {
+          // User cancelled sharing - no action needed
+          return;
+        }
+        console.error("Error sharing:", err);
+        if (err.name === "NotAllowedError") {
+          toast.error("Permission denied for sharing");
+        } else if (err.name === "DataError") {
+          toast.error("Invalid share data");
+        } else {
+          toast.error("Failed to share");
+        }
+      }
+    } else {
+      if (navigator.clipboard) {
+        navigator.clipboard
+          .writeText(url)
+          .then(() => toast("URL copied to clipboard!"))
+          .catch(() => manualCopy());
+      } else {
+        manualCopy();
+      }
+    }
+  };
+
+  const deleteComment = async (commentId) => {
+    if (!currentUser) {
+      toast.error("Please login to delete comments");
+      return;
+    }
+
+    setCommentToDelete(commentId);
+    setIsConfirmationOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await axios.delete(`${API_URL}/comments/${commentToDelete}`, {
+        withCredentials: true,
+      });
+
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment._id !== commentToDelete)
+      );
+
+      toast.success("Comment deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+      setError(error.message || "Failed to delete comment");
+      toast.error("Failed to delete comment");
+    } finally {
+      setIsConfirmationOpen(false);
+      setCommentToDelete(null);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsConfirmationOpen(false);
+    setCommentToDelete(null);
+  };
+
+  const updateComment = async (commentId) => {
+    if (!currentUser) {
+      toast.error("Please login to edit comments");
+      return;
+    }
+
+    if (!editText.trim()) return;
+
+    try {
+      await axios.put(
+        `${API_URL}/comments/${commentId}`,
+        { text: editText },
+        { withCredentials: true }
+      );
+
+      // Fetch updated comments
+      const updatedCommentsResponse = await axios.get(
+        `${API_URL}/comments/${id}`,
+        { withCredentials: true }
+      );
+
+      setComments(updatedCommentsResponse.data);
+      setEditingCommentId(null);
+      setEditText("");
+      toast.success("Comment updated successfully");
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error("Please login to edit comments");
+      } else {
+        toast.error(error.message || "Failed to update comment");
+      }
+      setError(error.message || "Failed to update comment");
+    }
+  };
 
   const GameSkeleton = () => (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -348,6 +534,7 @@ const Desc = () => {
                   <span>{isLiked ? "Liked" : "Like"}</span>
                 </button>
                 <button
+                  onClick={handleShare}
                   className={`px-4 py-2 rounded-lg flex items-center gap-2 ${theme.cardBg} ${theme.border} ${theme.secondary} border hover:bg-[#06c1ff]/10 hover:border-[#06c1ff]/30 hover:text-[#06c1ff] transition-all duration-300`}
                 >
                   <Share2 size={18} />
@@ -512,17 +699,114 @@ const Desc = () => {
                               )}
                             </div>
                             <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className={`font-semibold text-lg ${theme.primary}`}>
-                                  {comment.user?.name}
-                                </span>
-                                <span className={`text-sm ${theme.muted} bg-[#06c1ff]/10 px-2 py-0.5 rounded-full`}>
-                                  {new Date(comment.createdAt).toLocaleDateString()}
-                                </span>
-                              </div>
-                              <p className={`${theme.secondary} text-base leading-relaxed`}>
-                                {comment.text}
-                              </p>
+                              {editingCommentId === comment._id ? (
+                                <form
+                                  onSubmit={(e) => {
+                                    e.preventDefault();
+                                    updateComment(comment._id);
+                                  }}
+                                >
+                                  <input
+                                    type="text"
+                                    value={editText}
+                                    onChange={(e) =>
+                                      setEditText(e.target.value)
+                                    }
+                                    className={`flex-1 px-4 py-2.5 rounded-xl ${theme.cardBg} ${theme.border} border focus:border-[#06c1ff]/50 focus:outline-none ${theme.primary}`}
+                                  />
+                                  <div className="flex gap-2 mt-2">
+                                    <button
+                                      type="submit"
+                                      className="px-4 py-1.5 rounded-lg bg-[#06c1ff] text-white hover:bg-[#06c1ff]/90"
+                                    >
+                                      Save
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingCommentId(null);
+                                        setEditText("");
+                                      }}
+                                      className="px-4 py-1.5 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </form>
+                              ) : (
+                                <>
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <span
+                                      className={`font-se
+                                      mibold text-lg ${theme.primary}`}
+                                    >
+                                      {comment.user?.name}
+                                    </span>
+                                    <span
+                                      className={`text-sm ${theme.muted} bg-[#06c1ff]/10 px-2 py-0.5 rounded-full`}
+                                    >
+                                      {new Date(
+                                        comment.createdAt
+                                      ).toLocaleDateString()}
+                                    </span>
+                                  </div>
+                                  <p
+                                    className={`${theme.secondary} text-base leading-relaxed`}
+                                  >
+                                    {comment.text}
+                                  </p>
+                                  {comment.user._id === currentUser?.id && (
+                                    <div className="flex items-center gap-4 mt-2">
+                                      <button
+                                        onClick={() => {
+                                          setEditingCommentId(comment._id);
+                                          setEditText(comment.text);
+                                        }}
+                                        className="text-[#06c1ff] text-sm hover:text-[#06c1ff]/70 hover:underline flex items-center gap-1"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() =>
+                                          deleteComment(comment._id)
+                                        }
+                                        className="text-red-500 text-sm hover:text-red-400 hover:underline flex items-center gap-1"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M3 6h18" />
+                                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                        </svg>
+                                        Delete
+                                      </button>
+                                    </div>
+                                  )}
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -731,6 +1015,59 @@ const Desc = () => {
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isConfirmationOpen}
+        message="Are you sure you want to delete this comment?"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        theme={theme}
+      />
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={theme.mode}
+        toastStyle={{
+          backgroundColor:
+            theme.mode === "dark" ? "rgba(255, 255, 255, 0.05)" : "#ffffff",
+          color: theme.mode === "dark" ? "#ffffff" : "#000000",
+          borderWidth: "2px",
+          borderStyle: "solid",
+          borderColor: "rgba(6, 193, 255, 0.2)",
+          borderRadius: "12px",
+          backdropFilter: "blur(8px)",
+        }}
+        progressStyle={{
+          background: "#06c1ff",
+        }}
+        closeButton={({ closeToast }) => (
+          <button
+            onClick={closeToast}
+            className="p-1 rounded-lg hover:bg-[#06c1ff]/10 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        )}
+      />
     </div>
   );
 };
