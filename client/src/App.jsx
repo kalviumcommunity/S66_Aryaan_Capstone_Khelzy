@@ -1,21 +1,24 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+  import { useEffect, useState, lazy } from 'react';
 import './App.css'
-import Login from './Pages/Login'
-import Home from './Pages/Home'
-import FaceAuth from './Pages/FaceAuth'
-import LandingPage from './Pages/LandingPage';
 import { ThemeProvider } from './context/ThemeContext';
-import TopChart from './Pages/TopChart';
-import Desc from './Pages/Desc';
-import AllGames from './Pages/AllGames';
 import { API_URL, fetchOptions } from './config';
-import GameByTag from './components/GameByTag';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
 
+// Lazy load components
+const Login = lazy(() => import('./Pages/Login'));
+const Home = lazy(() => import('./Pages/Home'));
+const FaceAuth = lazy(() => import('./Pages/FaceAuth'));
+const LandingPage = lazy(() => import('./Pages/LandingPage'));
+const TopChart = lazy(() => import('./Pages/TopChart'));
+const Desc = lazy(() => import('./Pages/Desc'));
+const AllGames = lazy(() => import('./Pages/AllGames'));
+const GameByTag = lazy(() => import('./components/GameByTag'));
+const LikedGames = lazy(() => import('./Pages/LikedGames'));
+const AuthCallback = lazy(() => import('./components/AuthCallback'));
 
 // Handle auth callback
-const AuthCallback = () => {
+const AuthCallbackComponent = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -178,7 +181,7 @@ function App() {
     <ThemeProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<Navigate to="/landing" replace />} />
+          <Route path="/" element={<ProtectedRoute><Navigate to="/landing" replace /></ProtectedRoute>} />
           <Route path="/login" element={
             <AuthRoute>
               <Login />
@@ -200,9 +203,9 @@ function App() {
               <TopChart />
             </ProtectedRoute>
           } />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/games/:id" element={<Desc />} />
-          <Route path='/landing' element={<LandingPage/>}/>
+          <Route path="/auth/callback" element={<AuthCallbackComponent />} />
+          <Route path="/games/:id" element={<ProtectedRoute><Desc /></ProtectedRoute>} />
+          <Route path='/landing' element={<ProtectedRoute><LandingPage/></ProtectedRoute>}/>
           <Route path='/games/filter/:category' element={
             <ProtectedRoute>
               <GameByTag />
