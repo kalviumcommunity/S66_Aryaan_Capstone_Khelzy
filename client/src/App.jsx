@@ -15,7 +15,7 @@ const Desc = lazy(() => import('./Pages/Desc'));
 const AllGames = lazy(() => import('./Pages/AllGames'));
 const GameByTag = lazy(() => import('./components/GameByTag'));
 const LikedGames = lazy(() => import('./Pages/LikedGames'));
-const AuthCallback = lazy(() => import('./components/AuthCallback'));
+
 
 // Handle auth callback
 const AuthCallbackComponent = () => {
