@@ -20,4 +20,6 @@ const likedSchema = new mongoose.Schema({
 
 likedSchema.index({ userId: 1, gameId: 1 }, { unique: true });
 
-module.exports = mongoose.model('Liked',likedSchema)
+const LikeModel = mongoose.model('Liked',likedSchema)
+
+module.exports = { LikeModel }
