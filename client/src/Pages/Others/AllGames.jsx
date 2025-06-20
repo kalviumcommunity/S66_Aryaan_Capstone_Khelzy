@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
-import GameCard from "../components/GameCard";
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import GameCard from "../../components/GameCard";
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 import axios from "axios";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { Gamepad2, Grid3X3, Search, Filter, SortAsc } from 'lucide-react';
 import { API_URL } from "../config";

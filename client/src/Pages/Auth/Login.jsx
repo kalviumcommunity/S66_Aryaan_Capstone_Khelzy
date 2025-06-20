@@ -12,8 +12,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { API_URL } from "../config";
-import { useTheme } from "../context/ThemeContext";
-import ThemeToggle from "../components/ThemeToggle";
+import { useTheme } from "../../context/ThemeContext";
+import ThemeToggle from "../../components/ThemeToggle";
 
 const SlidingDoorLoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);

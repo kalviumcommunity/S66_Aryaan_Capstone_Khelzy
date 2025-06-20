@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import Header from "../components/Header";
+import Header from "../../components/Header";
 import {
   Clock,
   Users,
@@ -17,10 +17,10 @@ import {
   Download,
   Info,
 } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext";
 import { API_URL } from "../config";
 import { ToastContainer, toast } from "react-toastify";
-import ConfirmationModal from "../components/ConfirmationModal";
+import ConfirmationModal from "../../components/ConfirmationModal";
 
 const Desc = () => {
   const { id } = useParams();
