@@ -1,4 +1,4 @@
-export const API_URL = 'http://localhost:5000';
+export const API_URL = 'https://s66-aryaan-capstone-khelzy.onrender.com';
 
 
 
