@@ -123,7 +123,7 @@ function LandingPage() {
   }, [featured.length]);
 
   const homePage=()=>{
-    navigate('/home')
+    navigate('/login')
   }
   
   // Hero Game Card Component
