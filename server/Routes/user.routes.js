@@ -26,7 +26,7 @@ authRouter.get('/google/callback',
         failureRedirect: 'http://localhost:5000'
     }),
     async (req, res) => {
-        const user = await UserModel.findById(req.user._id).populate('friends');
+        const user = await UserModel.findById(req.user._id)
         const { accessToken, refreshToken } = createTokens(user);
 
         const cookieOptions = {
