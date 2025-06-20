@@ -1,166 +1,139 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Menu, X, Home, BarChart2, Grid, Gamepad, Heart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { API_URL } from '../config';
-import axios from 'axios';
-import { useTheme } from '../context/ThemeContext';
-import ThemeToggle from './ThemeToggle';
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
+import GameCard from './common/GameCard'
+import { useParams, Link } from 'react-router-dom'
+import { useTheme } from '../context/ThemeContext'
+import Header from './Header'
+import { Gamepad, ChevronRight } from 'lucide-react'
+import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { API_URL } from '../config'
 
-const Header = () => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
-  const { theme } = useTheme();
+function GameByTag() {
+  const { category } = useParams()
+  const { theme } = useTheme()
+  const [games, setGames] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
 
-
-  const handleLogout = async () => {
-    try {
-      const response = await axios.post(`${API_URL}/user/logout`, {}, {
-        withCredentials: true
-      });
-
-      if (response.status === 200) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = '/login';
-      } else {
-        console.error('Logout failed:', response.data);
-        alert('Logout failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-      alert('Network error during logout. Please try again.');
-    }
-  };
-
-  const menuItems = [
-    { name: "Home", path: "/home", icon: <Home size={20} /> },
-    { name: "Games", path: "/games", icon: <Gamepad size={20} /> },
-    { name: "Top Charts", path: "/top-charts", icon: <BarChart2 size={20} /> },
-    { name: "Favorites" , path:'/favorites',icon:<Heart size={20}/>}
-  ];
-
-  // Control body scroll when mobile menu is open
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
+    const fetchGames = async () => {
+      try {
+        const startTime = Date.now()
+        const response = await axios.get(`${API_URL}/games/filter/${category}`, {
+          withCredentials: true,
+        })
+        
+        // Add minimum delay of 800ms for loading
+        const elapsedTime = Date.now() - startTime
+        const remainingDelay = Math.max(0, 3000 - elapsedTime)
+        
+        setTimeout(() => {
+          setGames(response.data.games || [])
+          setLoading(false)
+        }, remainingDelay)
+
+      } catch (error) {
+        console.error("Failed to fetch games by category:", error.message)
+        setGames([])
+        setError(error.response?.data?.message || 'Failed to load game. Please try again later.')
+        setLoading(false)
+      }
     }
-    
-    return () => {
-      document.body.style.overflow = 'auto';
-    };
-  }, [isMobileMenuOpen]);
+    fetchGames()
+  }, [category])
+
+  if (loading) {
+    return (
+      <div className={`min-h-screen ${theme.background}`}>
+        <Header />
+        <div className="flex flex-col justify-center items-center min-h-[calc(100vh-80px)] pt-20">
+          <div className="w-96 h-96 mb-4"> 
+            <DotLottieReact
+              src="https://lottie.host/012ee33b-d9b9-443f-975a-62aad5995217/S8sXukPLpf.lottie"
+              loop
+              autoplay
+              className="w-full h-full"
+            />
+          </div>
+  
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
-      {/* Main Header */}
-      <div className={`${theme.backgroundSecondary} backdrop-blur-md shadow-lg border-b ${theme.border}`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between gap-8">
-            {/* Logo */}
-            <div 
-              className="flex items-center gap-3 cursor-pointer shrink-0"
-              onClick={() => navigate('/home')}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center">
-                <svg width="100%" height="100%" viewBox="-50 -50 100 100">
-                  <defs>
-                    <linearGradient id="cosmic1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{ stopColor: '#06c1ff' }} />
-                      <stop offset="100%" style={{ stopColor: '#0b8fd8' }} />
-                    </linearGradient>
-                    <filter id="glow">
-                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                      <feMerge>
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  <circle cx="0" cy="0" r="50" fill="url(#cosmic1)" filter="url(#glow)"/>
-                  <path d="M 0 0 Q 15 -15 25 0 Q 15 25 -10 15 Q -25 -5 -15 -20 Q 5 -25 20 -10" 
-                        fill="none" stroke="white" strokeWidth="4" strokeLinecap="round"/>
-                  <circle cx="0" cy="0" r="4" fill="white"/>
-                  <circle cx="18" cy="-8" r="2" fill="white"/>
-                  <circle cx="-12" cy="10" r="2" fill="white"/>
-                </svg>
-              </div>
-              <span className="font-bold text-xl bg-gradient-to-r from-[#06c1ff] to-[#0b8fd8] bg-clip-text text-transparent">
-                Khelzy
-              </span>
+    <div className={`min-h-screen ${theme.background}`}>
+      <Header />
+      <div className="max-w-7xl mx-auto px-4 pt-28 pb-16">
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-2 text-[#06c1ff]/70 mb-6 text-sm">
+          <Link to="/home" className="hover:text-[#06c1ff] transition-colors">
+            Games
+          </Link>
+          <ChevronRight size={16} />
+          <span className="text-[#06c1ff] font-medium">{category}</span>
+        </div>
+
+        {/* Page Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-[#06c1ff]/20 rounded-lg">
+              <Gamepad size={24} className="text-[#06c1ff]" />
             </div>
-
-    
-
-            {/* Right Section */}
-            <div className="flex items-center gap-3">
-              {/* Theme Toggle */}
-              <div className="hidden md:block">
-                <ThemeToggle />
-              </div>
-
-              {/* Hamburger Menu Button */}
-              <button
-                className={`p-2 hover:bg-[#06c1ff]/5 rounded-lg ${theme.secondary} hover:${theme.primary} transition-colors`}
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            </div>
+            <h1 className={`text-3xl font-bold ${theme.primary}`}>
+              {category} Games
+            </h1>
           </div>
+          <p className={`${theme.secondary}`}>
+            Browse our collection of {category.toLowerCase()} games
+          </p>
         </div>
-      </div>
 
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Mobile Menu Drawer */}
-      <div 
-        className={`fixed top-20 right-0 bottom-0 w-72 ${theme.backgroundSecondary} shadow-xl z-50 transform transition-all duration-300 ease-in-out ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex flex-col h-full p-4">
-
-          {/* Mobile Navigation */}
-          <nav className="flex-1 space-y-2">
-            {menuItems.map((item) => (
-              <button
-                key={item.name}
-                onClick={() => {
-                  navigate(item.path);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`flex items-center gap-3 w-full px-4 py-3 ${theme.secondary} hover:${theme.primary} hover:bg-[#06c1ff]/5 rounded-lg text-sm font-medium transition-colors`}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </button>
-            ))}
-          </nav>
-
-          
-          {/* Mobile Auth Button */}
-          
-            <button
-              onClick={handleLogout}
-              className="w-full mt-4 px-4 py-3 bg-gradient-to-r from-[#06c1ff] to-[#0b8fd8] text-[#0b2d72] rounded-lg text-sm font-medium shadow-md hover:shadow-lg hover:shadow-[#06c1ff]/20 transition-all"
+        {/* Games Grid */}
+        {error ? (
+          <div className={`rounded-2xl ${theme.cardBg} ${theme.border} border-2 p-8 text-center`}>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <h3 className={`text-xl font-semibold ${theme.primary} mb-2`}>
+              Error Loading Games
+            </h3>
+            <p className={`${theme.secondary}`}>
+              {error}
+            </p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="mt-4 px-4 py-2 bg-[#06c1ff] text-white rounded-lg hover:bg-[#06c1ff]/90 transition-colors"
             >
-              Logout
+              Try Again
             </button>
-          
-        </div>
+          </div>
+        ) : games.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {games.map((game) => (
+              <GameCard key={game._id} game={game} />
+            ))}
+          </div>
+        ) : (
+          <div className={`rounded-2xl ${theme.cardBg} ${theme.border} border-2 p-8 text-center`}>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#06c1ff]/20 flex items-center justify-center">
+              <Gamepad className="w-8 h-8 text-[#06c1ff]" />
+            </div>
+            <h3 className={`text-xl font-semibold ${theme.primary} mb-2`}>
+              No Games Found
+            </h3>
+            <p className={`${theme.secondary}`}>
+              We couldn't find any games in the {category} category.
+              Try checking out other categories.
+            </p>
+          </div>
+        )}
       </div>
-    </header>
-  );
-};
+    </div>
+  )
+}
 
-export default Header;
+export default GameByTag
