@@ -4,7 +4,7 @@ import { Camera, UserCheck, LogIn, Mail, Loader } from "lucide-react";
 import * as faceapi from "face-api.js";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { API_URL } from "../config";
+import { API_URL } from "../../config";
 
 // Add axios default config
 axios.defaults.withCredentials = true;

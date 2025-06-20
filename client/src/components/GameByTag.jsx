@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import GameCard from './GameCard'
+import GameCard from './common/GameCard'
 import { useParams, Link } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import Header from './Header'

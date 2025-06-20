@@ -21,11 +21,6 @@ const userSchema = mongoose.Schema({
   profilePicture: {
     type: String,
   },
-  friends: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    description: "Array of MongoDB ObjectIds representing friends"
-  }]
 });
 
 const UserModel = mongoose.model("User", userSchema);

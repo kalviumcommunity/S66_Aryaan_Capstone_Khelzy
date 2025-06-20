@@ -23,10 +23,10 @@ authRouter.get('/google', passport.authenticate('google', { scope: ['profile', '
 
 authRouter.get('/google/callback', 
     passport.authenticate('google', { 
-        failureRedirect: 'http://localhost:8080'
+        failureRedirect: 'http://localhost:5000'
     }),
     async (req, res) => {
-        const user = await UserModel.findById(req.user._id).populate('friends');
+        const user = await UserModel.findById(req.user._id)
         const { accessToken, refreshToken } = createTokens(user);
 
         const cookieOptions = {
@@ -48,6 +48,8 @@ authRouter.get('/google/callback',
 
         const frontendURL = 'http://localhost:5173';
             
+        // Passing token in URL for the initial verification only
+        // The actual auth will use the HttpOnly cookies set above
         res.redirect(`${frontendURL}/auth/callback?token=${accessToken}`);
     }
 );

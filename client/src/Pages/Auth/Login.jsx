@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import { FaGoogle } from "react-icons/fa";
 import {
@@ -11,9 +13,8 @@ import {
   ChevronRight,
   ArrowRight,
 } from "lucide-react";
-import { API_URL } from "../config";
-import { useTheme } from "../context/ThemeContext";
-import ThemeToggle from "../components/ThemeToggle";
+import { API_URL } from '../../config';
+import ThemeToggle from "../../components/ThemeToggle";
 
 const SlidingDoorLoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -27,6 +28,7 @@ const SlidingDoorLoginPage = () => {
   const [error, setError] = useState("");
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -34,19 +36,20 @@ const SlidingDoorLoginPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/user/login`, loginData, {
-        withCredentials: true,
-      });
-
+      const response = await axios.post(
+        `${API_URL}/user/login`, 
+        loginData,
+        { withCredentials: true } // Important for receiving cookies
+      );
+      
       if (response.data.success) {
-        const redirectPath = sessionStorage.getItem("redirectPath");
-        sessionStorage.removeItem("redirectPath");
-        navigate(redirectPath || "/home");
+        await login(); // Update auth context state
+        navigate('/home');
+      } else {
+        throw new Error(response.data.message || 'Login failed');
       }
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Network error occurred";
-      setError(errorMessage);
+      setError(error.response?.data?.message || error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -56,31 +59,40 @@ const SlidingDoorLoginPage = () => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
-    try {
-      const response = await axios.post(
-        `${API_URL}/user/register`,
-        signupData,
-        {
-          withCredentials: true,
-        }
-      );
 
-      if (response.data.success) {
-        setIsLogin(true);
-        alert("Registration successful! Please login.");
-        return;
+    try {
+      // Register the user
+      const registerResponse = await axios.post(
+        `${API_URL}/user/register`, 
+        signupData,
+        { withCredentials: true }
+      );
+      
+      if (registerResponse.data.success) {
+        // If registration is successful, automatically log them in
+        const loginResponse = await axios.post(
+          `${API_URL}/user/login`,
+          {
+            email: signupData.email,
+            password: signupData.password
+          },
+          { withCredentials: true }
+        );
+        
+        if (loginResponse.data.success) {
+          await login(); // Update auth context state
+          navigate('/home');
+        }
       }
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "Registration failed";
-      setError(errorMessage);
-      return;
+      setError(error.response?.data?.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = () => {
+    // Google OAuth will handle cookies automatically
     window.location.href = `${API_URL}/auth/google`;
   };
 
@@ -95,6 +107,19 @@ const SlidingDoorLoginPage = () => {
       {/* Theme Toggle */}
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
+      </div>
+
+      {/* Landing page button on top left */}
+      <div className="fixed top-4 left-4 z-50">
+        <button
+          onClick={() => navigate("/landing")}
+          className={`px-4 py-2 rounded-lg border border-[#06c1ff]/40 bg-white/5 hover:bg-white/15 hover:border-[#06c1ff]/60 transition-all duration-300 ${
+            isDarkMode ? "text-white" : "text-gray-800"
+          } hover:shadow-md font-semibold flex items-center`}
+        >
+          <ChevronLeft className="mr-2 h-5 w-5" />
+          Landing Page
+        </button>
       </div>
 
       {/* Animated background blobs */}

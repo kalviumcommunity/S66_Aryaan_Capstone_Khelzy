@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { Play, Star, Eye } from 'lucide-react';
-import { API_URL } from '../config';
+import { API_URL } from '../../config';
 import axios from 'axios'
 
 const GameCard = ({game}) => {
@@ -93,7 +93,7 @@ const GameCard = ({game}) => {
             {/* View Counter */}
             <div className="flex items-center text-xs text-white gap-1">
               <Eye size={14} />
-              <span>{localCount.toLocaleString()}</span>
+              <span>{game.count}</span>
             </div>
           </div>
         </div>

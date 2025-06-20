@@ -7,7 +7,7 @@ const createTokens = (user) => {
         name: user.name,
         email: user.email,
         profilePicture: user.profilePicture,
-        friends: user.friends
+        
     };
 
     const accessToken = jwt.sign(
@@ -49,7 +49,7 @@ const verifyToken = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
         
         // Find user and attach to request
-        const user = await UserModel.findById(decoded.userId).populate('friends');
+        const user = await UserModel.findById(decoded.userId)
         if (!user) {
             return res.status(404).json({
                 success: false,

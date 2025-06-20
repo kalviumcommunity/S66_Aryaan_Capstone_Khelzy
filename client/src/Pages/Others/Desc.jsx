@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
-import Header from "../components/Header";
+import Header from "../../components/Header";
 import {
   Clock,
   Users,
@@ -17,10 +17,10 @@ import {
   Download,
   Info,
 } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
-import { API_URL } from "../config";
+import { useTheme } from "../../context/ThemeContext";
+import { API_URL } from "../../config";
 import { ToastContainer, toast } from "react-toastify";
-import ConfirmationModal from "../components/ConfirmationModal";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 const Desc = () => {
   const { id } = useParams();
@@ -158,7 +158,7 @@ const Desc = () => {
         if (!currentUser) return;
         try {
             const response = await axios.get(
-                `${API_URL}/fav/check/${id}`,
+                `${API_URL}/favo/check/${id}`,
                 { withCredentials: true }
             );
             // Set isLiked to false if there's no status
@@ -225,7 +225,7 @@ const Desc = () => {
     try {
       if (!isLiked) {
         const response = await axios.post(
-          `${API_URL}/fav/like/${id}`,
+          `${API_URL}/favo/like/${id}`,
           {},
           { withCredentials: true }
         );
@@ -235,7 +235,7 @@ const Desc = () => {
         }
       } else {
         const response = await axios.delete(
-          `${API_URL}/fav/unlike/${id}`,  // Changed to match backend route
+          `${API_URL}/favo/unlike/${id}`,  // Changed to match backend route
           { withCredentials: true }
         );
         setIsLiked(false);
@@ -432,7 +432,7 @@ const Desc = () => {
         {/* Breadcrumbs */}
         {!isFullscreen && (
           <div className="flex items-center gap-2 text-[#06c1ff]/70 mb-6 text-sm">
-            <Link to="/home" className="hover:text-[#06c1ff] transition-colors">
+            <Link to="/games" className="hover:text-[#06c1ff] transition-colors">
               Games
             </Link>
             <ChevronRight size={16} />

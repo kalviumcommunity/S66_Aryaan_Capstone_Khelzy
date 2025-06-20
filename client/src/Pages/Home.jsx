@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Header from '../components/Header';
-import Footer from '../components/Footer';
-import GameCard from '../components/GameCard';
+import Footer from '../components/common/Footer';
+import GameCard from '../components/common/GameCard';
 import { Gamepad, Flame, Star, TrendingUp } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
+import axios from 'axios';
 
 // Featured Games Carousel
 const FeaturedGames = () => {
@@ -124,19 +125,11 @@ const GameGrid = () => {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const response = await fetch(`${API_URL}/games`, {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+        const response = await axios.get(`${API_URL}/games`, {
+          withCredentials: true,
         });
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch games');
-        }
-        
-        const data = await response.json();
-        setGames(data.games || []);
+        setGames(response.data.games || []);
       } catch (error) {
         setError('Failed to fetch games');
         console.error('Error fetching games:', error);
