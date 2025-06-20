@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import GameCard from '../../components/GameCard';
+import GameCard from '../../components/common/GameCard';
 import Header from '../../components/Header';
 import { useTheme } from '../../context/ThemeContext';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react'
-import { API_URL } from '../config';
+import { API_URL } from '../../config';
 
 const TopChart = () => {
   const [games, setGames] = useState([]);
