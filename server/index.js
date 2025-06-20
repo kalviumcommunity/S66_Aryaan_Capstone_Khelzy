@@ -22,7 +22,7 @@ app.use(cookieParser());
 // Enable CORS with specific origins and configuration
 // Update the CORS configuration
 app.use(cors({
-  origin: 'https://s66-aryaan-capstone-khelzy.vercel.app',
+  origin: 'http://localhost:5173',
   credentials: true,
   preflightContinue: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -53,7 +53,7 @@ app.use('/user', userRouter);
 app.use('/games', gameRouter);
 app.use('/comments',commentRouter)
 app.use('/faceAuth', faceAuthRoutes);
-app.use('/fav',likeRouter)
+app.use('/favo',likeRouter)
 
 // Start server
 const startServer = async () => {
