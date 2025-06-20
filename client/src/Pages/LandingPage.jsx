@@ -312,7 +312,7 @@ function LandingPage() {
                   transition={{ type: "tween", ease: "easeInOut", duration: 0.8 }}
                   className="flex w-full"
                 >
-                  {featured.map((item, index) => (
+                  {featured.map((item) => (
                     <div key={item.id} className="min-w-full">
                       <div className="relative aspect-[16/9]">
                         <img

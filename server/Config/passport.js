@@ -22,7 +22,7 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.NODE_ENV === 'production'
-        ? `http://localhost:${PORT}/auth/google/callback`  // Changed from onrender.com
+        ?  process.env.SERVER_URL  // Changed from onrender.com
         : `http://localhost:${PORT}/auth/google/callback`,  // Changed to use localhost
     proxy: true
 },
