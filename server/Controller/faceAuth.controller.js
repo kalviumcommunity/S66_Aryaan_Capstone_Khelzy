@@ -407,13 +407,23 @@ const gracefulShutdown = async () => {
 
 // Setup shutdown hooks
 process.on('SIGINT', async () => {
-  await gracefulShutdown();
-  process.exit(0);
+  try {
+    await gracefulShutdown();
+  } catch (err) {
+    console.error('Error during graceful shutdown:', err);
+  } finally {
+    process.exit(0);
+  }
 });
 
 process.on('SIGTERM', async () => {
-  await gracefulShutdown();
-  process.exit(0);
+  try {
+    await gracefulShutdown();
+  } catch (err) {
+    console.error('Error during graceful shutdown:', err);
+  } finally {
+    process.exit(0);
+  }
 });
 
 module.exports = {
