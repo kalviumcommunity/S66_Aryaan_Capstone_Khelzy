@@ -7,6 +7,9 @@ const failedAttempts = new Map();
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
 
+// Track last log time to prevent log flooding
+let lastLogTime = 0;
+
 // Utility: Cosine Similarity
 function cosineSimilarity(vec1, vec2) {
   if (!Array.isArray(vec1) || !Array.isArray(vec2) || vec1.length !== vec2.length) {
@@ -136,8 +139,11 @@ const login = async (req, res) => {
         });
       }
       
-      // Log without exposing similarity values in production
-      console.warn('Face verification failed: similarity below threshold');
+      // Rate limit logging to prevent log flooding
+      if (Date.now() - lastLogTime > 60000) {
+        console.warn('Face verification failed: similarity below threshold');
+        lastLogTime = Date.now();
+      }
 
       // Reset attempts if lockout time has passed
       const newCount = (Date.now() - attempts.lastAttempt > LOCKOUT_TIME) ? 1 : attempts.count + 1;
