@@ -180,7 +180,7 @@ const login = async (req, res) => {
     res.cookie("refreshToken", refreshToken, refreshCookieOptions);
     res.json({
       verified: true,
-      similarity,
+      ...(process.env.NODE_ENV === 'development' && { similarity }),
       message: "Login successful - Face verified",
       user: {
         id: user._id,
