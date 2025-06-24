@@ -2,6 +2,11 @@ const { UserModel } = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const { createTokens } = require("../MiddleWare/authMiddleware");
 
+// Track failed attempts (consider using Redis in production)
+const failedAttempts = new Map();
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
+
 // Utility: Cosine Similarity
 function cosineSimilarity(vec1, vec2) {
   if (!Array.isArray(vec1) || !Array.isArray(vec2) || vec1.length !== vec2.length) {
@@ -119,14 +124,34 @@ const login = async (req, res) => {
     const SIMILARITY_THRESHOLD = 0.92;
 
     if (similarity < SIMILARITY_THRESHOLD) {
+      const attemptKey = normalizedEmail;
+      const attempts = failedAttempts.get(attemptKey) || { count: 0, lastAttempt: 0 };
+
+      if (attempts.count >= MAX_ATTEMPTS && Date.now() - attempts.lastAttempt < LOCKOUT_TIME) {
+        return res.status(429).json({
+          message: "Too many failed attempts. Please try again later.",
+          verified: false
+        });
+      }
+      
       // Log without exposing similarity values in production
       console.warn('Face verification failed: similarity below threshold');
+      
+      // Update failed attempts
+      failedAttempts.set(attemptKey, {
+        count: attempts.count + 1,
+        lastAttempt: Date.now()
+      });
+      
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
         verified: false,
         ...(process.env.NODE_ENV === 'development' && { similarity, threshold: SIMILARITY_THRESHOLD })
       });
     }
+
+    // Reset failed attempts on successful login
+    failedAttempts.delete(normalizedEmail);
 
     // Generate tokens using user data
     const { accessToken, refreshToken } = createTokens({
