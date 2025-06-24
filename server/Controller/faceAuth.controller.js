@@ -214,6 +214,9 @@ const login = async (req, res) => {
       }
     }
     failedAttempts.delete(normalizedEmail);
+    
+    // Log successful authentication for security audit trail
+    console.info(`[${new Date().toISOString()}] Successful face authentication for user: ${normalizedEmail} (ID: ${user._id})`);
 
     // Generate tokens using user data
     const { accessToken, refreshToken } = createTokens({
@@ -340,6 +343,9 @@ const updateFaceEmbedding = async (req, res) => {
     // Update the face embedding
     user.faceEmbedding = faceEmbedding;
     await user.save();
+    
+    // Log successful face embedding update for security audit trail
+    console.info(`[${new Date().toISOString()}] Face authentication updated for user: ${normalizedEmail} (ID: ${user._id})`);
 
     return res.status(200).json({
       success: true,
