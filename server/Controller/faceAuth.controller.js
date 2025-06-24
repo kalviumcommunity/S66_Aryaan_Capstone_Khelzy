@@ -211,9 +211,12 @@ const login = async (req, res) => {
         await redisClient.del(attemptKey);
       } catch (err) {
         console.error('Error deleting attempt data from Redis:', err);
+        // Fallback to in-memory cleanup on Redis error
+        failedAttempts.delete(normalizedEmail);
       }
+    } else {
+      failedAttempts.delete(normalizedEmail);
     }
-    failedAttempts.delete(normalizedEmail);
     
     // Log successful authentication for security audit trail
     console.info(`[${new Date().toISOString()}] Successful face authentication for user: ${normalizedEmail} (ID: ${user._id})`);
