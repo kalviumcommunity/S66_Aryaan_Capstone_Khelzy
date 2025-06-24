@@ -119,7 +119,8 @@ const login = async (req, res) => {
     const SIMILARITY_THRESHOLD = 0.92;
 
     if (similarity < SIMILARITY_THRESHOLD) {
-      console.warn(`Face verification failed: similarity=${similarity}, threshold=${SIMILARITY_THRESHOLD}`);
+      // Log without exposing similarity values in production
+      console.warn('Face verification failed: similarity below threshold');
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
         verified: false,
