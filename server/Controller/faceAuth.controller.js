@@ -409,6 +409,7 @@ const gracefulShutdown = async () => {
   }
 };
 
+// Export only the necessary functions - remove all code after this
 module.exports = {
   signup,
   login,
@@ -417,17 +418,6 @@ module.exports = {
   verifyAuth,
   gracefulShutdown
 };
-  }, SHUTDOWN_TIMEOUT);
-  
-  try {
-    await gracefulShutdown();
-  } catch (err) {
-    console.error('Error during graceful shutdown:', err);
-  } finally {
-    clearTimeout(shutdownTimeout);
-    process.exit(0);
-  }
-});
 
 process.on('SIGTERM', async () => {
   const shutdownTimeout = setTimeout(() => {
