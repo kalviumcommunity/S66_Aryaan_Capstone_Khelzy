@@ -22,7 +22,7 @@ app.use(cookieParser());
 // Enable CORS with specific origins and configuration
 // Update the CORS configuration
 app.use(cors({
-  origin: 'https://s66-aryaan-capstone-khelzy.vercel.app',
+  origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
