@@ -409,8 +409,14 @@ const gracefulShutdown = async () => {
 
 // Setup shutdown hooks
 process.on('SIGINT', async () => {
+  const shutdownTimeout = setTimeout(() => {
+    console.error('Graceful shutdown timeout, forcing exit');
+    process.exit(1);
+  }, 5000);
+  
   try {
     await gracefulShutdown();
+    clearTimeout(shutdownTimeout);
   } catch (err) {
     console.error('Error during graceful shutdown:', err);
   } finally {
@@ -419,8 +425,14 @@ process.on('SIGINT', async () => {
 });
 
 process.on('SIGTERM', async () => {
+  const shutdownTimeout = setTimeout(() => {
+    console.error('Graceful shutdown timeout, forcing exit');
+    process.exit(1);
+  }, 5000);
+  
   try {
     await gracefulShutdown();
+    clearTimeout(shutdownTimeout);
   } catch (err) {
     console.error('Error during graceful shutdown:', err);
   } finally {
