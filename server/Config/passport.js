@@ -3,7 +3,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { UserModel } = require('../models/user.model');
 require('dotenv').config();
 
-
+const PORT  = process.env.PORT
 
 passport.serializeUser((user, done) => {
     done(null, user.id);

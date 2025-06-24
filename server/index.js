@@ -7,11 +7,11 @@ const passport = require('./Config/passport');
 const { connectDB } = require('./Config/db');
 const { userRouter, authRouter } = require('./Routes/user.routes');
 const { gameRouter } = require('./Routes/game.routes');
-const commentRouter = require('./Routes/comment.routes')
-const likeRouter = require('./Routes/liked.routes')
-const faceAuthRoutes = require('./Routes/faceAuth.routes');
+const commentRouter = require('./Routes/comment.routes');
+const likeRouter = require('./Routes/liked.routes');
+const faceAuthRouter = require('./Routes/faceAuth.routes');
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 
@@ -24,9 +24,9 @@ app.use(cookieParser());
 app.use(cors({
   origin: 'https://s66-aryaan-capstone-khelzy.vercel.app',
   credentials: true,
-  preflightContinue: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  exposedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 app.enable('trust proxy'); // Add this line for secure cookies to work
@@ -51,9 +51,9 @@ app.use(passport.session());
 app.use('/auth', authRouter);
 app.use('/user', userRouter);
 app.use('/games', gameRouter);
-app.use('/comments',commentRouter)
-app.use('/faceAuth', faceAuthRoutes);
-app.use('/favo',likeRouter)
+app.use('/comments', commentRouter);
+app.use('/favo', likeRouter);
+app.use('/faceAuth', faceAuthRouter);
 
 // Start server
 const startServer = async () => {

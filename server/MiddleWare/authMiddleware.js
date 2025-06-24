@@ -2,12 +2,14 @@ const jwt = require('jsonwebtoken');
 const { UserModel } = require('../models/user.model');
 
 const createTokens = (user) => {
+    // Make sure to handle both user._id and user.id formats
+    const userId = user._id || user.id;
+    
     const tokenPayload = {
-        userId: user._id,
+        userId: userId,
         name: user.name,
         email: user.email,
         profilePicture: user.profilePicture,
-        
     };
 
     const accessToken = jwt.sign(
@@ -17,7 +19,7 @@ const createTokens = (user) => {
     );
     
     const refreshToken = jwt.sign(
-        { userId: user._id },
+        { userId: userId },
         process.env.REFRESH_TOKEN_SECRET || 'refresh-secret',
         { expiresIn: '7d' }
     );
@@ -44,12 +46,11 @@ const verifyToken = async (req, res, next) => {
                 message: 'Access denied. Login to continue.' 
             });
         }
-        
-        // Verify token
+          // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
         
         // Find user and attach to request
-        const user = await UserModel.findById(decoded.userId)
+        const user = await UserModel.findById(decoded.userId);
         if (!user) {
             return res.status(404).json({
                 success: false,

@@ -9,6 +9,8 @@ const userSchema = mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    lowercase: true, // Ensure email is always stored in lowercase
+    trim: true      // Remove any whitespace
   },
   password: {
     type: String,
@@ -21,6 +23,15 @@ const userSchema = mongoose.Schema({
   profilePicture: {
     type: String,
   },
+  // Face authentication fields merged from faceAuth.js
+  faceEmbedding: { 
+    type: [Number],
+    default: null
+  },
+  webAuthnCredential: { 
+    type: Object,
+    default: null 
+  }
 });
 
 const UserModel = mongoose.model("User", userSchema);

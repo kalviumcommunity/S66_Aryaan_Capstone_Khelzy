@@ -87,7 +87,6 @@ const login = async (req, res) => {
                 name: user.name,
                 email: user.email,
                 profilePicture: user.profilePicture,
-                
             }
         });
     } catch (error) {
@@ -137,8 +136,21 @@ const logout = async (req, res) => {
  */
 const getCurrentUser = async (req, res) => {
     try {
-        // Get userId from token with null check
-        const userId = req.user?._id;
+        // In case req.user comes directly from middleware
+        if (req.user) {
+            return res.status(200).json({
+                success: true,
+                user: {
+                    id: req.user._id,
+                    name: req.user.name,
+                    email: req.user.email,
+                    profilePicture: req.user.profilePicture
+                }
+            });
+        }
+        
+        // If we have tokenData with userId from middleware
+        const userId = req.tokenData?.userId;
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -161,7 +173,8 @@ const getCurrentUser = async (req, res) => {
             user: {
                 id: user._id,
                 name: user.name,
-                email: user.email
+                email: user.email,
+                profilePicture: user.profilePicture
             }
         });
     } catch (error) {
