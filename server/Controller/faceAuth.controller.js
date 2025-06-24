@@ -1,27 +1,8 @@
 const { UserModel } = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const { createTokens } = require("../MiddleWare/authMiddleware");
-const redis = require("redis");
 
-// Configure Redis client for tracking failed attempts
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
-const redisClient = redis.createClient({
-  url: REDIS_URL
-});
-
-// Connect to Redis or use fallback to Map if Redis isn't available
-let redisConnected = false;
-(async () => {
-  try {
-    await redisClient.connect();
-    redisConnected = true;
-    console.log("Redis connected successfully for auth tracking");
-  } catch (err) {
-    console.warn("Redis connection failed, using in-memory fallback:", err.message);
-  }
-})();
-
-// Fallback for when Redis is unavailable
+// In-memory tracking for failed login attempts
 const failedAttempts = new Map();
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
@@ -144,26 +125,9 @@ const login = async (req, res) => {
     }
 
     const SIMILARITY_THRESHOLD = Math.min(Math.max(parseFloat(process.env.FACE_SIMILARITY_THRESHOLD) || 0.92, 0.7), 0.98);
-    
-    if (similarity < SIMILARITY_THRESHOLD) {
-      const attemptKey = `failed_attempts:${normalizedEmail}`;
-      let attempts = { count: 0, lastAttempt: 0 };
-      
-      // Get attempts data from Redis or fallback to in-memory Map
-      if (redisConnected) {
-        try {
-          const attemptsData = await redisClient.get(attemptKey);
-          if (attemptsData) {
-            attempts = JSON.parse(attemptsData);
-          }
-        } catch (err) {
-          console.error('Error retrieving attempt data from Redis:', err);
-          // Fallback to in-memory storage
-          attempts = failedAttempts.get(normalizedEmail) || { count: 0, lastAttempt: 0 };
-        }
-      } else {
-        attempts = failedAttempts.get(normalizedEmail) || { count: 0, lastAttempt: 0 };
-      }
+      if (similarity < SIMILARITY_THRESHOLD) {
+      // Get attempts data from in-memory Map
+      let attempts = failedAttempts.get(normalizedEmail) || { count: 0, lastAttempt: 0 };
 
       if (attempts.count >= MAX_ATTEMPTS && Date.now() - attempts.lastAttempt < LOCKOUT_TIME) {
         const timeRemaining = Math.ceil((LOCKOUT_TIME - (Date.now() - attempts.lastAttempt)) / 1000 / 60);
@@ -185,21 +149,8 @@ const login = async (req, res) => {
       const newAttemptData = {
         count: newCount,
         lastAttempt: Date.now()
-      };
-
-      // Update failed attempts in Redis or fallback
-      if (redisConnected) {
-        try {
-          // Set with expiration equal to lockout time
-          await redisClient.setEx(attemptKey, Math.ceil(LOCKOUT_TIME/1000), JSON.stringify(newAttemptData));
-        } catch (err) {
-          console.error('Error storing attempt data in Redis:', err);
-          // Fallback to in-memory
-          failedAttempts.set(normalizedEmail, newAttemptData);
-        }
-      } else {
-        failedAttempts.set(normalizedEmail, newAttemptData);
-      }
+      };      // Update failed attempts in memory
+      failedAttempts.set(normalizedEmail, newAttemptData);
       
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
@@ -207,19 +158,8 @@ const login = async (req, res) => {
         ...(process.env.NODE_ENV === 'development' && { similarity, threshold: SIMILARITY_THRESHOLD })
       });
     }
-    
-    // Reset failed attempts on successful login
-    const attemptKey = `failed_attempts:${normalizedEmail}`;
-    if (redisConnected) {
-      try {
-        await redisClient.del(attemptKey);
-      } catch (err) {
-        console.error('Error deleting attempt data from Redis:', err);
-        // Don't fallback to in-memory deletion as it creates inconsistency
-      }
-    } else {
-      failedAttempts.delete(normalizedEmail);
-    }
+      // Reset failed attempts on successful login
+    failedAttempts.delete(normalizedEmail);
     
     // Log successful authentication for security audit trail
     console.info(`[${new Date().toISOString()}] Successful face authentication for user: ${normalizedEmail} (ID: ${user._id})`);
@@ -398,34 +338,10 @@ const verifyAuth = async (req, res) => {
 
 // Handle graceful shutdown
 const gracefulShutdown = async () => {
-  if (redisConnected) {
-    try {
-      await redisClient.quit();
-      console.log('Redis connection closed gracefully');
-    } catch (err) {
-      console.error('Error closing Redis connection:', err);
-    }
-  }
+  console.log('Graceful shutdown completed');
 };
 
-// Export only the necessary functions - remove all code after this
-const SHUTDOWN_TIMEOUT = 5000;
-
-process.on('SIGTERM', async () => {
-  const shutdownTimeout = setTimeout(() => {
-    console.error('Graceful shutdown timeout, forcing exit');
-    process.exit(1);
-  }, SHUTDOWN_TIMEOUT);
-  
-  try {
-    await gracefulShutdown();
-  } catch (err) {
-    console.error('Error during graceful shutdown:', err);
-  } finally {
-    clearTimeout(shutdownTimeout);
-    process.exit(0);
-  }
-});
+// Export only the necessary functions
 
 module.exports = {
   signup,
