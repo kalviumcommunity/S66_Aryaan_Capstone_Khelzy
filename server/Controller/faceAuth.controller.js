@@ -143,7 +143,9 @@ const login = async (req, res) => {
       });
     }
 
-    const SIMILARITY_THRESHOLD = 0.92;    if (similarity < SIMILARITY_THRESHOLD) {
+    const SIMILARITY_THRESHOLD = 0.92;
+    
+    if (similarity < SIMILARITY_THRESHOLD) {
       const attemptKey = `failed_attempts:${normalizedEmail}`;
       let attempts = { count: 0, lastAttempt: 0 };
       
