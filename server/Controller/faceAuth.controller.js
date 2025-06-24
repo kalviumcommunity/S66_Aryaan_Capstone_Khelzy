@@ -103,7 +103,9 @@ const login = async (req, res) => {
         verified: false,
         threshold: SIMILARITY_THRESHOLD,
       });
-    } // Generate tokens using user data
+    }
+
+    // Generate tokens using user data
     const { accessToken, refreshToken } = createTokens({
       id: user._id,
       email: user.email,
@@ -145,8 +147,6 @@ const login = async (req, res) => {
     });
   }
 };
-
-
 
 // Check if email exists
 const checkEmailExists = async (req, res) => {
