@@ -417,10 +417,10 @@ process.on('SIGINT', async () => {
   
   try {
     await gracefulShutdown();
-    clearTimeout(shutdownTimeout);
   } catch (err) {
     console.error('Error during graceful shutdown:', err);
   } finally {
+    clearTimeout(shutdownTimeout);
     process.exit(0);
   }
 });
@@ -433,10 +433,10 @@ process.on('SIGTERM', async () => {
   
   try {
     await gracefulShutdown();
-    clearTimeout(shutdownTimeout);
   } catch (err) {
     console.error('Error during graceful shutdown:', err);
   } finally {
+    clearTimeout(shutdownTimeout);
     process.exit(0);
   }
 });
