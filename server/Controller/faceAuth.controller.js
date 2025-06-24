@@ -174,7 +174,7 @@ const login = async (req, res) => {
       
       // Rate limit logging to prevent log flooding
       if (Date.now() - lastLogTime > 60000) {
-        console.warn('Face verification failed: similarity below threshold');
+        console.warn(`Face verification failed for ${normalizedEmail}: similarity below threshold`);
         lastLogTime = Date.now();
       }
 
