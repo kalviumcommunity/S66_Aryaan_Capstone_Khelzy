@@ -121,9 +121,7 @@ const login = async (req, res) => {
       console.warn(`Face verification failed for ${normalizedEmail}: similarity=${similarity}, threshold=${SIMILARITY_THRESHOLD}`);
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
-        similarity: similarity,
         verified: false,
-        threshold: SIMILARITY_THRESHOLD,
       });
     }
 
