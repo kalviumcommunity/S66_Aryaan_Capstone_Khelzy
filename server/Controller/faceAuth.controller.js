@@ -136,10 +136,13 @@ const login = async (req, res) => {
       
       // Log without exposing similarity values in production
       console.warn('Face verification failed: similarity below threshold');
-      
+
+      // Reset attempts if lockout time has passed
+      const newCount = (Date.now() - attempts.lastAttempt > LOCKOUT_TIME) ? 1 : attempts.count + 1;
+
       // Update failed attempts
       failedAttempts.set(attemptKey, {
-        count: attempts.count + 1,
+        count: newCount,
         lastAttempt: Date.now()
       });
       
