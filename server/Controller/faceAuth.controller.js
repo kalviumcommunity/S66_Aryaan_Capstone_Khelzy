@@ -123,6 +123,7 @@ const login = async (req, res) => {
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
         verified: false,
+        ...(process.env.NODE_ENV === 'development' && { similarity, threshold: SIMILARITY_THRESHOLD })
       });
     }
 
