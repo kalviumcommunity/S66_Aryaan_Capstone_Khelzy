@@ -2,14 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, UserCheck, LogIn, Mail, Loader } from "lucide-react";
 import * as faceapi from "face-api.js";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../config";
-
-// Add axios default config
-axios.defaults.withCredentials = true;
-axios.defaults.headers.common["Accept"] = "application/json";
-axios.defaults.headers.common["Content-Type"] = "application/json";
+import { useAuth } from "../../context/AuthContext";
 
 const FaceAuth = () => {
   const videoRef = useRef(null);
@@ -18,29 +13,21 @@ const FaceAuth = () => {
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Use our auth context for face authentication functions
+  const { isAuthenticated, faceAuthSignup, faceAuthLogin, faceAuthError } = useAuth();
 
   useEffect(() => {
-    checkExistingToken();
+    if (isAuthenticated) {
+      navigate("/home");
+    }
     loadModels();
     return () => {
       if (videoRef.current?.srcObject) {
         videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
       }
     };
-  }, []);
-
-  const checkExistingToken = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/faceAuth/verify-auth`);
-
-      if (response.data.success) {
-        navigate("/home");
-      }
-    } catch (error) {
-      console.log("No valid session found", error);
-    }
-  };
-
+  }, [isAuthenticated, navigate]);
   const loadModels = async () => {
     try {
       setIsLoading(true);
@@ -109,7 +96,6 @@ const FaceAuth = () => {
       .withFaceDescriptor();
     return detection ? Array.from(detection.descriptor) : null;
   };
-
   const register = async () => {
     if (!email) {
       setVerificationStatus({
@@ -118,42 +104,7 @@ const FaceAuth = () => {
       });
       return;
     }
-    setIsVerifying(true);
-
-    try {
-      const faceEmbedding = await getFaceEmbedding();
-      if (!faceEmbedding) {
-        setVerificationStatus({
-          success: false,
-          message: "No face detected in camera",
-        });
-        setIsVerifying(false);
-        return;
-      }
-
-      const res = await axios.post(`${API_URL}/faceAuth/face/signup`, {
-        email,
-        faceEmbedding,
-      });
-      stopCamera();
-      setVerificationStatus({
-        success: true,
-        message: res.data.message,
-      });
-    } catch (error) {
-      console.error("Registration error:", error);
-      stopCamera();
-      setVerificationStatus({
-        success: false,
-        message: error.response?.data?.message || "Registration failed",
-      });
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  const login = async () => {
-    if (!email) return alert("Enter email!");
+    
     if (!/\S+@\S+\.\S+/.test(email)) {
       setVerificationStatus({
         success: false,
@@ -161,6 +112,7 @@ const FaceAuth = () => {
       });
       return;
     }
+    
     setIsVerifying(true);
     setVerificationStatus(null);
 
@@ -175,60 +127,77 @@ const FaceAuth = () => {
         return;
       }
 
-      const loginResponse = await axios.post(`${API_URL}/faceAuth/face/login`, {
-        email,
-        faceEmbedding,
-      });
-
-      const { verified, similarity, message, threshold } = loginResponse.data;
-
+      const result = await faceAuthSignup(email, faceEmbedding);
+      
       setVerificationStatus({
-        success: verified,
-        similarity: similarity,
-        message: `${message} ${
-          verified
-            ? `(Match: ${(similarity * 100).toFixed(2)}%)`
-            : `(${(similarity * 100).toFixed(2)}% < required ${
-                threshold * 100
-              }%)`
-        }`,
+        success: result.success,
+        message: result.message,
       });
-
-      if (verified) {
+      
+      if (result.success) {
+        // Optionally stop camera if registration is successful
         stopCamera();
-        // Wait for 1 second to ensure token is set
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Retry authentication check up to 3 times
-        let attempts = 0;
-        while (attempts < 3) {
-          try {
-            const authCheck = await axios.get(
-              `${API_URL}/faceAuth/verify-auth`,
-              {
-                withCredentials: true,
-              }
-            );
-
-            if (authCheck.data.success) {
-              navigate("/home");
-              return;
-            }
-          } catch (err) {
-            console.log(`Auth check attempt ${attempts + 1} failed`);
-          }
-          attempts++;
-          // Wait 500ms between attempts
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-        throw new Error("Failed to verify authentication after login");
       }
-    } catch (err) {
-      const errorMessage =
-        err.response?.data?.message || "Face verification failed";
+    } catch (error) {
+      console.error("Registration error:", error);
       setVerificationStatus({
         success: false,
-        message: errorMessage,
+        message: faceAuthError || "Registration failed",
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+  const login = async () => {
+    if (!email) {
+      setVerificationStatus({
+        success: false,
+        message: "Please enter your email address", 
+      });
+      return;
+    }
+    
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setVerificationStatus({
+        success: false,
+        message: "Please enter a valid email address",
+      });
+      return;
+    }
+    
+    setIsVerifying(true);
+    setVerificationStatus(null);
+
+    try {
+      const faceEmbedding = await getFaceEmbedding();
+      if (!faceEmbedding) {
+        setVerificationStatus({
+          success: false,
+          message: "No face detected in camera",
+        });
+        setIsVerifying(false);
+        return;
+      }
+
+      const result = await faceAuthLogin(email, faceEmbedding);
+      
+      setVerificationStatus({
+        success: result.success,
+        similarity: result.similarity,
+        message: result.message,
+      });
+      
+      if (result.success) {
+        stopCamera();
+        setTimeout(() => {
+          navigate("/home");
+        }, 1500);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setVerificationStatus({
+        success: false,
+        message: faceAuthError || "Face verification failed",
       });
     } finally {
       setIsVerifying(false);

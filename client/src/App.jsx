@@ -11,7 +11,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import Loading from './components/common/Loading';
-import ProtectedRoute from './components/common/ProtectedRoute';
+import ProtectedRoute from './components/ProtectedRoute';
 import OAuthCallback from './components/OAuthCallBack';
 import './App.css';
 
@@ -41,12 +41,25 @@ const routerOptions = {
 const AuthGuard = ({ children }) => {
   const { isAuthenticated } = useAuth();
   
+
   if (isAuthenticated) {
     // If user is authenticated and tries to access login or landing, redirect to home
     return <Navigate to="/home" replace />;
   }
 
   return children;
+};
+
+// Modified ConditionalRoute
+const ConditionalRoute = ({ path, element }) => {
+  const { isAuthenticated } = useAuth();
+  
+
+  if (!isAuthenticated && path === '/home') {
+    return <Navigate to="/landing" replace />;
+  }
+
+  return element;
 };
 
 function App() {
@@ -72,7 +85,11 @@ function App() {
                   <Route path="/" element={<AuthGuard><LandingPage /></AuthGuard>} />
 
                   {/* Protected Home Route */}
-                  <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+                  <Route path="/home" element={
+                    <ConditionalRoute path="/home" element={
+                      <ProtectedRoute><Home /></ProtectedRoute>
+                    } />
+                  } />
 
                   {/* Other Protected Routes */}
                   <Route path="/top-charts" element={<ProtectedRoute><TopChart /></ProtectedRoute>} />
