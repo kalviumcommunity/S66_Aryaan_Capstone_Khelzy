@@ -107,8 +107,11 @@ const login = async (req, res) => {
 
     // Generate tokens using user data
     const { accessToken, refreshToken } = createTokens({
+      _id: user._id,
       id: user._id,
+      name: user.name,
       email: user.email,
+      profilePicture: user.profilePicture,
     });
 
     const cookieOptions = {
