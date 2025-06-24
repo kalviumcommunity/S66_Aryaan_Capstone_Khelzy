@@ -106,6 +106,7 @@ const login = async (req, res) => {
     const SIMILARITY_THRESHOLD = 0.92;
 
     if (isNaN(similarity) || similarity < SIMILARITY_THRESHOLD) {
+      console.warn(`Face verification failed for ${normalizedEmail}: similarity=${similarity}, threshold=${SIMILARITY_THRESHOLD}`);
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
         similarity: isNaN(similarity) ? 0 : similarity,
