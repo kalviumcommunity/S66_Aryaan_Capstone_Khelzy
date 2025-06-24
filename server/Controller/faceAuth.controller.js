@@ -213,7 +213,7 @@ const login = async (req, res) => {
         await redisClient.del(attemptKey);
       } catch (err) {
         console.error('Error deleting attempt data from Redis:', err);
-        // Fallback to in-memory cleanup on Redis error
+        // Fallback to in-memory deletion if Redis fails
         failedAttempts.delete(normalizedEmail);
       }
     } else {
