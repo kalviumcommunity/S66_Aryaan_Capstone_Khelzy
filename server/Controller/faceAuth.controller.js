@@ -8,8 +8,8 @@ function cosineSimilarity(vec1, vec2) {
     return 0;
   }
   
-  if (!vec1.every(v => typeof v === 'number' && !isNaN(v)) || 
-      !vec2.every(v => typeof v === 'number' && !isNaN(v))) {
+  if (!vec1.every(v => typeof v === 'number' && !isNaN(v) && isFinite(v)) || 
+      !vec2.every(v => typeof v === 'number' && !isNaN(v) && isFinite(v))) {
     return 0;
   }
   
