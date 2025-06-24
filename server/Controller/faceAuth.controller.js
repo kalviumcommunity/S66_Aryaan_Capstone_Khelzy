@@ -207,7 +207,9 @@ const login = async (req, res) => {
         verified: false,
         ...(process.env.NODE_ENV === 'development' && { similarity, threshold: SIMILARITY_THRESHOLD })
       });
-    }    // Reset failed attempts on successful login
+    }
+    
+    // Reset failed attempts on successful login
     const attemptKey = `failed_attempts:${normalizedEmail}`;
     if (redisConnected) {
       try {
