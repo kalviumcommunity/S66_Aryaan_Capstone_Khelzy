@@ -108,7 +108,6 @@ const login = async (req, res) => {
     }
 
     const similarity = cosineSimilarity(faceEmbedding, user.faceEmbedding);
-    const SIMILARITY_THRESHOLD = 0.92;
 
     if (isNaN(similarity)) {
       return res.status(400).json({
@@ -116,6 +115,8 @@ const login = async (req, res) => {
         verified: false,
       });
     }
+
+    const SIMILARITY_THRESHOLD = 0.92;
 
     if (similarity < SIMILARITY_THRESHOLD) {
       console.warn(`Face verification failed for ${normalizedEmail}: similarity=${similarity}, threshold=${SIMILARITY_THRESHOLD}`);
