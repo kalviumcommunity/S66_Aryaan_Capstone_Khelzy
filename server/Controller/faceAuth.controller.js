@@ -128,9 +128,11 @@ const login = async (req, res) => {
       const attempts = failedAttempts.get(attemptKey) || { count: 0, lastAttempt: 0 };
 
       if (attempts.count >= MAX_ATTEMPTS && Date.now() - attempts.lastAttempt < LOCKOUT_TIME) {
+        const timeRemaining = Math.ceil((LOCKOUT_TIME - (Date.now() - attempts.lastAttempt)) / 1000 / 60);
         return res.status(429).json({
-          message: "Too many failed attempts. Please try again later.",
-          verified: false
+          message: `Too many failed attempts. Please try again in ${timeRemaining} minutes.`,
+          verified: false,
+          retryAfter: timeRemaining
         });
       }
       
