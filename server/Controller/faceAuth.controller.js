@@ -409,14 +409,7 @@ const gracefulShutdown = async () => {
 };
 
 // Export only the necessary functions - remove all code after this
-module.exports = {
-  signup,
-  login,
-  checkEmailExists,
-  updateFaceEmbedding,
-  verifyAuth,
-  gracefulShutdown
-};
+const SHUTDOWN_TIMEOUT = 5000;
 
 process.on('SIGTERM', async () => {
   const shutdownTimeout = setTimeout(() => {
