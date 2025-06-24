@@ -215,8 +215,7 @@ const login = async (req, res) => {
         await redisClient.del(attemptKey);
       } catch (err) {
         console.error('Error deleting attempt data from Redis:', err);
-        // Fallback to in-memory deletion if Redis fails
-        failedAttempts.delete(normalizedEmail);
+        // Don't fallback to in-memory deletion as it creates inconsistency
       }
     } else {
       failedAttempts.delete(normalizedEmail);
