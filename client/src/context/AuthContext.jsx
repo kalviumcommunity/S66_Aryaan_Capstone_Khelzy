@@ -15,6 +15,8 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [faceAuthError, setFaceAuthError] = useState(null);
 
   // Function to check authentication status
   const checkAuthStatus = async () => {
@@ -25,10 +27,14 @@ export const AuthProvider = ({ children }) => {
       });
       
       setIsAuthenticated(response.data.success || false);
+      if (response.data.user) {
+        setUser(response.data.user);
+      }
       return response.data.success || false;
     } catch (error) {
       console.error('Auth check failed:', error);
       setIsAuthenticated(false);
+      setUser(null);
       return false;
     } finally {
       setLoading(false);
@@ -45,6 +51,69 @@ export const AuthProvider = ({ children }) => {
     await checkAuthStatus();
   };
 
+  // Face authentication signup
+  const faceAuthSignup = async (email, faceEmbedding) => {
+    setFaceAuthError(null);
+    try {
+      const response = await axios.post(`${API_URL}/faceAuth/face/signup`, {
+        email,
+        faceEmbedding
+      }, {
+        withCredentials: true
+      });
+      
+      return {
+        success: true,
+        message: response.data.message,
+        isUpdate: response.data.isUpdate || false
+      };
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Face authentication signup failed';
+      setFaceAuthError(errorMsg);
+      return {
+        success: false,
+        message: errorMsg
+      };
+    }
+  };
+
+  // Face authentication login
+  const faceAuthLogin = async (email, faceEmbedding) => {
+    setFaceAuthError(null);
+    try {
+      const response = await axios.post(`${API_URL}/faceAuth/face/login`, {
+        email,
+        faceEmbedding
+      }, {
+        withCredentials: true
+      });
+
+      if (response.data.verified) {
+        setIsAuthenticated(true);
+        setUser(response.data.user);
+        return {
+          success: true,
+          similarity: response.data.similarity,
+          message: response.data.message
+        };
+      } else {
+        setFaceAuthError(response.data.message);
+        return {
+          success: false,
+          similarity: response.data.similarity,
+          message: response.data.message
+        };
+      }
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Face authentication login failed';
+      setFaceAuthError(errorMsg);
+      return {
+        success: false,
+        message: errorMsg
+      };
+    }
+  };
+
   // Logout function
   const logout = async () => {
     try {
@@ -55,6 +124,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout error:', error);
     } finally {
       setIsAuthenticated(false);
+      setUser(null);
     }
   };
 
@@ -63,7 +133,11 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     logout,
-    checkAuthStatus
+    checkAuthStatus,
+    user,
+    faceAuthSignup,
+    faceAuthLogin,
+    faceAuthError
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
