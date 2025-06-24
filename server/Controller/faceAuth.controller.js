@@ -143,8 +143,7 @@ const login = async (req, res) => {
       });
     }
 
-    const rawThreshold = parseFloat(process.env.FACE_SIMILARITY_THRESHOLD) || 0.92;
-    const SIMILARITY_THRESHOLD = isNaN(rawThreshold) ? 0.92 : Math.min(Math.max(rawThreshold, 0.7), 0.98);
+    const SIMILARITY_THRESHOLD = Math.min(Math.max(parseFloat(process.env.FACE_SIMILARITY_THRESHOLD) || 0.92, 0.7), 0.98);
     
     if (similarity < SIMILARITY_THRESHOLD) {
       const attemptKey = `failed_attempts:${normalizedEmail}`;
@@ -454,3 +453,4 @@ module.exports = {
   verifyAuth,
   gracefulShutdown
 };
+
