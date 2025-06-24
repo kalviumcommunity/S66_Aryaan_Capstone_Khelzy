@@ -1,8 +1,27 @@
 const { UserModel } = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const { createTokens } = require("../MiddleWare/authMiddleware");
+const redis = require("redis");
 
-// Track failed attempts (consider using Redis in production)
+// Configure Redis client for tracking failed attempts
+const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const redisClient = redis.createClient({
+  url: REDIS_URL
+});
+
+// Connect to Redis or use fallback to Map if Redis isn't available
+let redisConnected = false;
+(async () => {
+  try {
+    await redisClient.connect();
+    redisConnected = true;
+    console.log("Redis connected successfully for auth tracking");
+  } catch (err) {
+    console.warn("Redis connection failed, using in-memory fallback:", err.message);
+  }
+})();
+
+// Fallback for when Redis is unavailable
 const failedAttempts = new Map();
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
@@ -124,11 +143,25 @@ const login = async (req, res) => {
       });
     }
 
-    const SIMILARITY_THRESHOLD = 0.92;
-
-    if (similarity < SIMILARITY_THRESHOLD) {
-      const attemptKey = normalizedEmail;
-      const attempts = failedAttempts.get(attemptKey) || { count: 0, lastAttempt: 0 };
+    const SIMILARITY_THRESHOLD = 0.92;    if (similarity < SIMILARITY_THRESHOLD) {
+      const attemptKey = `failed_attempts:${normalizedEmail}`;
+      let attempts = { count: 0, lastAttempt: 0 };
+      
+      // Get attempts data from Redis or fallback to in-memory Map
+      if (redisConnected) {
+        try {
+          const attemptsData = await redisClient.get(attemptKey);
+          if (attemptsData) {
+            attempts = JSON.parse(attemptsData);
+          }
+        } catch (err) {
+          console.error('Error retrieving attempt data from Redis:', err);
+          // Fallback to in-memory storage
+          attempts = failedAttempts.get(normalizedEmail) || { count: 0, lastAttempt: 0 };
+        }
+      } else {
+        attempts = failedAttempts.get(normalizedEmail) || { count: 0, lastAttempt: 0 };
+      }
 
       if (attempts.count >= MAX_ATTEMPTS && Date.now() - attempts.lastAttempt < LOCKOUT_TIME) {
         const timeRemaining = Math.ceil((LOCKOUT_TIME - (Date.now() - attempts.lastAttempt)) / 1000 / 60);
@@ -147,21 +180,39 @@ const login = async (req, res) => {
 
       // Reset attempts if lockout time has passed
       const newCount = (Date.now() - attempts.lastAttempt > LOCKOUT_TIME) ? 1 : attempts.count + 1;
-
-      // Update failed attempts
-      failedAttempts.set(attemptKey, {
+      const newAttemptData = {
         count: newCount,
         lastAttempt: Date.now()
-      });
+      };
+
+      // Update failed attempts in Redis or fallback
+      if (redisConnected) {
+        try {
+          // Set with expiration equal to lockout time
+          await redisClient.setEx(attemptKey, Math.ceil(LOCKOUT_TIME/1000), JSON.stringify(newAttemptData));
+        } catch (err) {
+          console.error('Error storing attempt data in Redis:', err);
+          // Fallback to in-memory
+          failedAttempts.set(normalizedEmail, newAttemptData);
+        }
+      } else {
+        failedAttempts.set(normalizedEmail, newAttemptData);
+      }
       
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
         verified: false,
         ...(process.env.NODE_ENV === 'development' && { similarity, threshold: SIMILARITY_THRESHOLD })
       });
+    }    // Reset failed attempts on successful login
+    const attemptKey = `failed_attempts:${normalizedEmail}`;
+    if (redisConnected) {
+      try {
+        await redisClient.del(attemptKey);
+      } catch (err) {
+        console.error('Error deleting attempt data from Redis:', err);
+      }
     }
-
-    // Reset failed attempts on successful login
     failedAttempts.delete(normalizedEmail);
 
     // Generate tokens using user data
@@ -333,10 +384,34 @@ const verifyAuth = async (req, res) => {
   }
 };
 
+// Handle graceful shutdown
+const gracefulShutdown = async () => {
+  if (redisConnected) {
+    try {
+      await redisClient.quit();
+      console.log('Redis connection closed gracefully');
+    } catch (err) {
+      console.error('Error closing Redis connection:', err);
+    }
+  }
+};
+
+// Setup shutdown hooks
+process.on('SIGINT', async () => {
+  await gracefulShutdown();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await gracefulShutdown();
+  process.exit(0);
+});
+
 module.exports = {
   signup,
   login,
   checkEmailExists,
   updateFaceEmbedding,
-  verifyAuth
+  verifyAuth,
+  gracefulShutdown
 };
