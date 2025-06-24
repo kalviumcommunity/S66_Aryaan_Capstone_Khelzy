@@ -408,14 +408,14 @@ const gracefulShutdown = async () => {
   }
 };
 
-// Shutdown configuration
-const SHUTDOWN_TIMEOUT = 5000;
-
-// Setup shutdown hooks
-process.on('SIGINT', async () => {
-  const shutdownTimeout = setTimeout(() => {
-    console.error('Graceful shutdown timeout, forcing exit');
-    process.exit(1);
+module.exports = {
+  signup,
+  login,
+  checkEmailExists,
+  updateFaceEmbedding,
+  verifyAuth,
+  gracefulShutdown
+};
   }, SHUTDOWN_TIMEOUT);
   
   try {
