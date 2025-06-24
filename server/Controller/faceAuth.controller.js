@@ -96,10 +96,10 @@ const login = async (req, res) => {
     const similarity = cosineSimilarity(faceEmbedding, user.faceEmbedding);
     const SIMILARITY_THRESHOLD = 0.92;
 
-    if (similarity < SIMILARITY_THRESHOLD) {
+    if (isNaN(similarity) || similarity < SIMILARITY_THRESHOLD) {
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
-        similarity,
+        similarity: isNaN(similarity) ? 0 : similarity,
         verified: false,
         threshold: SIMILARITY_THRESHOLD,
       });
