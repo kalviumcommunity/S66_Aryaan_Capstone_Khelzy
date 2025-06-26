@@ -46,7 +46,7 @@ authRouter.get('/google/callback',
         res.cookie('token', accessToken, cookieOptions);
         res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-        const frontendURL = 'https://s66-aryaan-capstone-khelzy.vercel.app';
+        const frontendURL = process.env.FRONTEND_URL;
             
         // Passing token in URL for the initial verification only
         // The actual auth will use the HttpOnly cookies set above
