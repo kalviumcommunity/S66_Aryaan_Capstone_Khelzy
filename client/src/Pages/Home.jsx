@@ -8,6 +8,7 @@ import { Gamepad, Flame, Star, TrendingUp } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { API_URL } from '../config';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 // Featured Games Carousel
 const FeaturedGames = () => {
@@ -170,7 +171,12 @@ const TrendingGames = () => {
       navigate(`/games/${gameId}`);
     } catch (error) {
       console.error('Error updating game count:', error);
-      // Still navigate but maybe show a warning
+      // Show error toast to inform user
+      toast.error('Failed to update game statistics. You can still play the game!', {
+        duration: 4000,
+        position: 'top-center',
+      });
+      // Navigate even if count update fails
       navigate(`/games/${gameId}`);
     }
   };
