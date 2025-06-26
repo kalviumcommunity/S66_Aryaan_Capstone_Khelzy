@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Gamepad, ChevronRight, Star, TrendingUp, Award, Users, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { API_URL } from '../config';
 
 
 function LandingPage() {
-  const [theme, setTheme] = useState({
+  const [theme] = useState({
     background: 'bg-[#080f1d]',
     primary: 'text-white',
     secondary: 'text-gray-300',
@@ -16,111 +18,83 @@ function LandingPage() {
   });
   
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [hoveredGame, setHoveredGame] = useState(null);
-  const navigate = useNavigate()
-  
-  // Featured Games
-  const featured = [
-    { 
-      id: 1, 
-      title: "Galaxy Racers", 
-      image: "/api/placeholder/800/400", 
-      description: "Race through space in this futuristic multiplayer racing game!",
-      category: "Racing"
-    },
-    { 
-      id: 2, 
-      title: "Dungeon Hunters", 
-      image: "/api/placeholder/800/400", 
-      description: "Explore dangerous dungeons and fight epic monsters!",
-      category: "Adventure"
-    },
-    { 
-      id: 3, 
-      title: "Pixel Battles", 
-      image: "/api/placeholder/800/400", 
-      description: "Retro-style multiplayer battle arena with unique characters!",
-      category: "Action"
-    }
-  ];
-  
-  // Popular Games
-  const popularGames = [
-    { 
-      id: 1, 
-      title: "Space Odyssey", 
-      category: "Adventure", 
-      rating: 4.8, 
-      imageUrl: "/api/placeholder/320/180",
-      plays: "120K" 
-    },
-    { 
-      id: 2, 
-      title: "Medieval Conquest", 
-      category: "Strategy", 
-      rating: 4.5, 
-      imageUrl: "/api/placeholder/320/180",
-      plays: "95K" 
-    },
-    { 
-      id: 3, 
-      title: "Neon Racer", 
-      category: "Racing", 
-      rating: 4.7, 
-      imageUrl: "/api/placeholder/320/180",
-      plays: "150K" 
-    },
-    { 
-      id: 4, 
-      title: "Block Puzzle", 
-      category: "Puzzle", 
-      rating: 4.2, 
-      imageUrl: "/api/placeholder/320/180",
-      plays: "200K" 
-    },
-    { 
-      id: 5, 
-      title: "Wild West", 
-      category: "RPG", 
-      rating: 4.6, 
-      imageUrl: "/api/placeholder/320/180",
-      plays: "78K" 
-    },
-    { 
-      id: 6, 
-      title: "Zombie Survival", 
-      category: "Action", 
-      rating: 4.9, 
-      imageUrl: "/api/placeholder/320/180",
-      plays: "180K" 
-    }
-  ];
-  
-  // Trending games
-  const trending = [
-    { id: 1, title: "Space Odyssey", plays: "120K", change: "+20%" },
-    { id: 2, title: "Neon Racer", plays: "150K", change: "+15%" },
-    { id: 3, title: "Block Puzzle", plays: "200K", change: "+12%" },
-  ];
-  
-  // Categories
+  const [popularGames, setPopularGames] = useState([]);
+  const [trending, setTrending] = useState([]);
+  const [featured, setFeatured] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // Categories for the landing page
   const categories = [
-    { icon: "🎮", name: "All Games", id: "all" },
-    { icon: "🔫", name: "Action", id: "action" },
-    { icon: "🧩", name: "Puzzle", id: "puzzle" },
-    { icon: "🏎️", name: "Racing", id: "racing" },
-    { icon: "⚔️", name: "Adventure", id: "adventure" },
-    { icon: "🏀", name: "Sports", id: "sports" },
+    { name: "Action", icon: "⚔️" },
+    { name: "Adventure", icon: "🗺️" },
+    { name: "Racing", icon: "🏁" },
+    { name: "Puzzle", icon: "🧩" },
+    { name: "Sports", icon: "⚽" },
+    { name: "Strategy", icon: "♟️" }
   ];
   
-  // Auto-advance featured carousel
+  // Fetch games data
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % featured.length);
-    }, 5000);
+    const fetchGames = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/games`, {
+          withCredentials: true,
+        });
+        const games = response.data.games || [];
+        
+        // Featured game IDs to fetch
+        const featuredGameIds = [
+          '6822d3678537420f584614fe',
+          '682351cae54312c810f497a9', 
+          '682430d68b764aa3abe12b39',
+          '682431718b764aa3abe12b4b'
+        ];
+        
+        // Get featured games by IDs
+        const featuredGames = games.filter(game => 
+          featuredGameIds.includes(game._id)
+        ).map(game => ({
+          id: game._id,
+          title: game.title,
+          image: game.imageUrl || "/api/placeholder/800/400",
+          isVideo: game.imageUrl && (game.imageUrl.includes('.mp4') || game.imageUrl.includes('.webm') || game.imageUrl.includes('.mov')),
+          category: game.category || "Game"
+        }));
+        setFeatured(featuredGames);
+        
+        // Sort by count for popular games (take top 6)
+        const sortedByPlays = [...games].sort((a, b) => (b.count || 0) - (a.count || 0));
+        setPopularGames(sortedByPlays.slice(0, 6));
+        
+        // Get trending games (simulate trending with recent games)
+        const trendingGames = games.slice(0, 3).map((game, index) => {
+          // Calculate deterministic percentage rise based on game properties
+          const gameIdStr = game._id || game.id || '';
+          const gameIdHash = gameIdStr.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 10;
+          const baseRise = 10 + (gameIdHash * 1.5); // 10-25% base
+          const popularityBonus = Math.floor((game.count || 0) / 100); // Bonus based on popularity
+          const positionBonus = (3 - index) * 5; // Higher bonus for first positions
+          const totalRise = Math.min(Math.floor(baseRise + popularityBonus + positionBonus), 50); // Cap at 50%
+          
+          return {
+            id: game._id || game.id,
+            title: game.title,
+            count: game.count || 0,
+            rise: `+${totalRise}%`
+          };
+        });
+        setTrending(trendingGames);
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch games:", error);
+        setLoading(false);
+      }
+    };
     
-    return () => clearInterval(timer);
-  }, [featured.length]);
+    fetchGames();
+  }, []);
 
   const homePage=()=>{
     navigate('/login')
@@ -128,13 +102,13 @@ function LandingPage() {
   
   // Hero Game Card Component
   const HeroGameCard = ({ game, index }) => (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+    <div 
       className={`${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 rounded-2xl overflow-hidden hover:border-[#06c1ff]/30 hover:shadow-lg hover:shadow-[#06c1ff]/10 transition-all duration-300 group`}
-      onMouseEnter={() => setHoveredGame(game.id)}
-      onMouseLeave={() => setHoveredGame(null)}
+      style={{
+        opacity: 1,
+        transform: 'translateY(0px)',
+        transitionDelay: `${index * 100}ms`
+      }}
     >
       <div className="aspect-[16/9] relative">
         <img 
@@ -148,14 +122,13 @@ function LandingPage() {
               {game.category}
             </span>
             <div className="flex items-center justify-between mt-2">
-              <span className="text-white font-bold">{game.plays} plays</span>
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-[#06c1ff] text-[#0b2d72] px-3 py-1 rounded-lg text-sm font-medium"
+              <span className="text-white font-bold">{game.count || '0'} plays</span>
+              <button 
+                onClick={() => navigate('/login')}
+                className="bg-[#06c1ff] text-[#0b2d72] px-3 py-1 rounded-lg text-sm font-medium hover:bg-[#05a8e6] transition-colors"
               >
                 Play Now
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
@@ -169,7 +142,7 @@ function LandingPage() {
           <span className={theme.secondary}>{game.rating}</span>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
   
   return (
@@ -182,7 +155,7 @@ function LandingPage() {
               
               <div 
               className="flex items-center gap-3 cursor-pointer shrink-0"
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/login')}
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center">
                 <svg width="100%" height="100%" viewBox="-50 -50 100 100">
@@ -218,6 +191,7 @@ function LandingPage() {
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/login')}
                 className="hidden md:block px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg transition-all duration-300"
               >
                 Sign In
@@ -225,6 +199,7 @@ function LandingPage() {
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/login')}
                 className="px-4 py-2 bg-[#06c1ff] text-[#0b2d72] rounded-lg font-medium transition-all duration-300"
               >
                 Play Now
@@ -273,6 +248,7 @@ function LandingPage() {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => navigate('/login')}
                   className="px-8 py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl font-bold text-lg border border-white/20 hover:bg-white/20 transition-colors duration-300"
                 >
                   Top Charts
@@ -315,21 +291,33 @@ function LandingPage() {
                   {featured.map((item) => (
                     <div key={item.id} className="min-w-full">
                       <div className="relative aspect-[16/9]">
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                        />
+                        {item.isVideo ? (
+                          <video
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={item.image}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-[#080f1d] via-[#080f1d]/50 to-transparent" />
                         <div className="absolute bottom-0 left-0 p-8">
                           <span className="bg-[#06c1ff]/20 text-[#06c1ff] px-3 py-1 rounded-full text-sm font-medium mb-3 inline-block">
                             {item.category}
                           </span>
-                          <h2 className="text-3xl font-bold mb-2 text-white">{item.title}</h2>
-                          <p className="text-lg text-gray-200 mb-4">{item.description}</p>
+                          <h2 className="text-3xl font-bold mb-4 text-white">{item.title}</h2>
                           <motion.button 
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            onClick={() => navigate('/login')}
                             className="px-6 py-2 bg-[#06c1ff] text-[#0b2d72] rounded-lg font-bold shadow-lg shadow-[#06c1ff]/20 flex items-center gap-2"
                           >
                             Play Now
@@ -371,7 +359,10 @@ function LandingPage() {
               <Gamepad className={theme.accent} size={24} />
               <h2 className="text-2xl font-bold">Game Categories</h2>
             </div>
-            <button className="text-sm font-medium text-[#06c1ff] hover:underline transition-colors flex items-center gap-1">
+            <button 
+              onClick={() => navigate('/login')}
+              className="text-sm font-medium text-[#06c1ff] hover:underline transition-colors flex items-center gap-1"
+            >
               View All <ChevronRight size={16} />
             </button>
           </div>
@@ -382,6 +373,7 @@ function LandingPage() {
                 key={index}
                 whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/login')}
                 className={`min-w-[150px] py-6 px-4 rounded-xl cursor-pointer transition-all duration-300 flex flex-col items-center justify-center gap-3 border-2 ${theme.cardBg} ${theme.border} hover:bg-[#06c1ff]/5 hover:border-[#06c1ff]/20 hover:text-[#06c1ff]`}
               >
                 <div className="text-3xl mb-1">{category.icon}</div>
@@ -391,28 +383,117 @@ function LandingPage() {
           </div>
         </div>
       </section>
-      
+
       {/* Popular Games Section */}
-      <section className="py-16 relative overflow-hidden">
-        {/* Background accent */}
-        <div className="absolute top-1/2 -translate-y-1/2 -left-32 w-64 h-64 bg-[#06c1ff]/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-[#06c1ff]/5 rounded-full blur-3xl"></div>
-        
-        <div className="container mx-auto px-6 max-w-7xl relative z-10">
-          <div className="flex items-center justify-between mb-12">
+      <section className="py-16 relative">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <Flame className="text-[#06c1ff]" size={24} />
+              <Star className={theme.accent} size={24} />
               <h2 className="text-2xl font-bold">Popular Games</h2>
             </div>
-            <button className="text-sm font-medium text-[#06c1ff] hover:underline transition-colors flex items-center gap-1">
+            <button 
+              onClick={() => navigate('/login')}
+              className="text-sm font-medium text-[#06c1ff] hover:underline transition-colors flex items-center gap-1"
+            >
               View All <ChevronRight size={16} />
             </button>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {popularGames.map((game, index) => (
-              <HeroGameCard key={game.id} game={game} index={index} />
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {loading ? (
+              // Loading skeleton for popular games
+              Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={`skeleton-${index}`}
+                  className={`${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 rounded-2xl overflow-hidden animate-pulse`}
+                >
+                  <div className="aspect-[16/9] bg-gray-200/10" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-4 bg-gray-200/10 rounded w-2/3" />
+                    <div className="h-3 bg-gray-200/10 rounded w-1/2" />
+                  </div>
+                </div>
+              ))
+            ) : popularGames.length > 0 ? (
+              popularGames.map((game, index) => (
+                <HeroGameCard key={game._id || game.id || index} game={game} index={index} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className={theme.secondary}>No popular games available at the moment.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Trending Section */}
+      <section className="py-16 relative">
+        <div className="container mx-auto px-6 max-w-7xl">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <TrendingUp className={theme.accent} size={24} />
+              <h2 className="text-2xl font-bold">Trending Now</h2>
+            </div>
+            <button 
+              onClick={() => navigate('/login')}
+              className="text-sm font-medium text-[#06c1ff] hover:underline transition-colors flex items-center gap-1"
+            >
+              View All <ChevronRight size={16} />
+            </button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {loading ? (
+              // Loading skeleton for trending
+              Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={`trending-skeleton-${index}`}
+                  className={`${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 rounded-xl p-6 animate-pulse`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="h-5 bg-gray-200/10 rounded w-1/2" />
+                    <div className="h-4 bg-gray-200/10 rounded w-1/4" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="h-4 bg-gray-200/10 rounded w-1/3" />
+                    <div className="h-8 bg-gray-200/10 rounded w-20" />
+                  </div>
+                </div>
+              ))
+            ) : trending.length > 0 ? (
+              trending.map((game, index) => (
+                <div 
+                  key={game.id}
+                  className={`${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 rounded-xl p-6 hover:border-[#06c1ff]/30 hover:shadow-lg hover:shadow-[#06c1ff]/10 transition-all duration-300`}
+                  style={{
+                    animationDelay: `${index * 100}ms`
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <Flame className="text-[#06c1ff]" size={20} />
+                      <span className="font-bold text-lg">{game.title}</span>
+                    </div>
+                    <span className="text-green-400 text-sm font-medium">{game.rise}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">{game.count} plays</span>
+                    <button 
+                      onClick={() => navigate('/login')}
+                      className="px-4 py-2 bg-[#06c1ff] text-[#0b2d72] rounded-lg text-sm font-medium hover:bg-[#05a8e6] transition-colors"
+                    >
+                      Play Now
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p className={theme.secondary}>No trending games available at the moment.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -421,84 +502,45 @@ function LandingPage() {
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-[#06c1ff]/5 skew-y-3 transform -translate-y-1/2"></div>
         <div className="container mx-auto px-6 max-w-7xl relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Stats & Trending */}
-            <div className="lg:col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Stats Card */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  className={`${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 rounded-2xl p-6 shadow-lg hover:shadow-[#06c1ff]/10 hover:border-[#06c1ff]/30 transition-all duration-300`}
-                >
-                  <div className="flex items-center gap-2 mb-6">
-                    <Users className="text-[#06c1ff]" size={20} />
-                    <h3 className="font-bold">Player Stats</h3>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="bg-[#06c1ff]/10 rounded-lg p-4 text-center">
-                      <p className="text-[#06c1ff] text-2xl font-bold">10M+</p>
-                      <p className="text-sm text-gray-400">Active Players</p>
-                    </div>
-                    <div className="bg-[#06c1ff]/10 rounded-lg p-4 text-center">
-                      <p className="text-[#06c1ff] text-2xl font-bold">45M+</p>
-                      <p className="text-sm text-gray-400">Games Played</p>
-                    </div>
-                    <div className="bg-[#06c1ff]/10 rounded-lg p-4 text-center">
-                      <p className="text-[#06c1ff] text-2xl font-bold">500+</p>
-                      <p className="text-sm text-gray-400">Games</p>
-                    </div>
-                    <div className="bg-[#06c1ff]/10 rounded-lg p-4 text-center">
-                      <p className="text-[#06c1ff] text-2xl font-bold">24/7</p>
-                      <p className="text-sm text-gray-400">Support</p>
-                    </div>
-                  </div>
-                </motion.div>
-                
-                {/* Trending Games Card */}
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  viewport={{ once: true }}
-                  className={`${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 rounded-2xl p-6 shadow-lg hover:shadow-[#06c1ff]/10 hover:border-[#06c1ff]/30 transition-all duration-300`}
-                >
-                  <div className="flex items-center gap-2 mb-6">
-                    <TrendingUp className="text-[#06c1ff]" size={20} />
-                    <h3 className="font-bold">Trending Now</h3>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    {trending.map((game, index) => (
-                      <motion.div 
-                        key={game.id} 
-                        className={`flex items-center justify-between p-3 rounded-xl ${theme.cardBg} hover:bg-[#06c1ff]/5 transition-all duration-300 cursor-pointer`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-[#06c1ff] opacity-80 text-sm font-medium">#{index + 1}</span>
-                          <span className="font-medium">{game.title}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-gray-400">{game.plays}</span>
-                          <span className="text-xs text-[#06c1ff]">{game.change}</span>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Stats Card */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+              className={`${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 rounded-2xl p-8 shadow-lg hover:shadow-[#06c1ff]/10 hover:border-[#06c1ff]/30 transition-all duration-300`}
+            >
+              <div className="flex items-center gap-2 mb-8">
+                <Users className="text-[#06c1ff]" size={24} />
+                <h3 className="text-xl font-bold">Platform Stats</h3>
               </div>
-            </div>
+              
+              <div className="grid grid-cols-2 gap-6">
+                <div className="bg-[#06c1ff]/10 rounded-lg p-6 text-center">
+                  <p className="text-[#06c1ff] text-3xl font-bold">10M+</p>
+                  <p className="text-sm text-gray-400 mt-1">Active Players</p>
+                </div>
+                <div className="bg-[#06c1ff]/10 rounded-lg p-6 text-center">
+                  <p className="text-[#06c1ff] text-3xl font-bold">45M+</p>
+                  <p className="text-sm text-gray-400 mt-1">Games Played</p>
+                </div>
+                <div className="bg-[#06c1ff]/10 rounded-lg p-6 text-center">
+                  <p className="text-[#06c1ff] text-3xl font-bold">500+</p>
+                  <p className="text-sm text-gray-400 mt-1">Mini Games</p>
+                </div>
+                <div className="bg-[#06c1ff]/10 rounded-lg p-6 text-center">
+                  <p className="text-[#06c1ff] text-3xl font-bold">24/7</p>
+                  <p className="text-sm text-gray-400 mt-1">Available</p>
+                </div>
+              </div>
+            </motion.div>
             
             {/* CTA Card */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
               viewport={{ once: true }}
               className="bg-gradient-to-br from-[#06c1ff]/20 to-[#06c1ff]/5 backdrop-blur-md rounded-2xl p-8 border border-[#06c1ff]/30 shadow-lg relative overflow-hidden"
             >
@@ -508,24 +550,28 @@ function LandingPage() {
               
               <div className="relative z-10">
                 <div className="w-12 h-12 rounded-full bg-[#06c1ff] flex items-center justify-center mb-6">
-                  <Award className="text-[#0b2d72]" size={24} />
+                  <Gamepad className="text-[#0b2d72]" size={24} />
                 </div>
                 
-                <h3 className="text-2xl font-bold mb-4">Ready to Join the Fun?</h3>
+                <h3 className="text-2xl font-bold mb-4">Ready to Play?</h3>
                 <p className="text-gray-300 mb-8">
-                  Sign up now and get access to exclusive games, track your achievements, and compete with friends.
+                  Join thousands of players and start playing amazing mini games instantly. No downloads, just pure fun!
                 </p>
                 
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   className="w-full py-3 bg-[#06c1ff] text-[#0b2d72] rounded-xl font-bold text-lg shadow-lg shadow-[#06c1ff]/20 mb-4"
+                  onClick={() => navigate('/login')}
                 >
-                  Create Account
+                  Start Playing
                 </motion.button>
                 
-                <button className="w-full py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium hover:bg-white/20 transition-colors duration-300">
-                  Learn More
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="w-full py-3 bg-white/10 backdrop-blur-sm text-white rounded-xl font-medium hover:bg-white/20 transition-colors duration-300"
+                >
+                  Browse Games
                 </button>
               </div>
             </motion.div>
@@ -541,7 +587,7 @@ function LandingPage() {
               <div className="flex items-center gap-3 mb-6">
                 <div 
               className="flex items-center gap-3 cursor-pointer shrink-0"
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/login')}
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center">
                 <svg width="100%" height="100%" viewBox="-50 -50 100 100">
