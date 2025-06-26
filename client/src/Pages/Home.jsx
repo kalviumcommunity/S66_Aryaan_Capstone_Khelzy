@@ -166,14 +166,12 @@ const TrendingGames = () => {
       await axios.put(`${API_URL}/games/${gameId}/count`, {}, {
         withCredentials: true
       });
-      
-      // Navigate to game details page
-      navigate(`/games/${gameId}`);
     } catch (error) {
       console.error('Error updating game count:', error);
-      // Still navigate even if count update fails
-      navigate(`/games/${gameId}`);
     }
+    
+    // Navigate to game details page
+    navigate(`/games/${gameId}`);
   };
 
   useEffect(() => {
