@@ -69,11 +69,12 @@ function LandingPage() {
         
         // Get trending games (simulate trending with recent games)
         const trendingGames = games.slice(0, 3).map((game, index) => {
-          // Simulate percentage rise based on game popularity and position
-          const baseRise = Math.floor(Math.random() * 15) + 10; // 10-25% base
+          // Calculate deterministic percentage rise based on game properties
+          const gameIdHash = (game._id || game.id || '').length % 10; // Simple hash
+          const baseRise = 10 + (gameIdHash * 1.5); // 10-25% base
           const popularityBonus = Math.floor((game.count || 0) / 100); // Bonus based on popularity
           const positionBonus = (3 - index) * 5; // Higher bonus for first positions
-          const totalRise = Math.min(baseRise + popularityBonus + positionBonus, 50); // Cap at 50%
+          const totalRise = Math.min(Math.floor(baseRise + popularityBonus + positionBonus), 50); // Cap at 50%
           
           return {
             id: game._id || game.id,
