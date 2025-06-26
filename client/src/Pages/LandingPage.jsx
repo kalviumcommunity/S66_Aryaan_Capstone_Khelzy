@@ -43,24 +43,17 @@ function LandingPage() {
         });
         const games = response.data.games || [];
         
-        // Featured game IDs to fetch
-        const featuredGameIds = [
-          '6822d3678537420f584614fe',
-          '682351cae54312c810f497a9', 
-          '682430d68b764aa3abe12b39',
-          '682431718b764aa3abe12b4b'
-        ];
-        
-        // Get featured games by IDs
-        const featuredGames = games.filter(game => 
-          featuredGameIds.includes(game._id)
-        ).map(game => ({
-          id: game._id,
-          title: game.title,
-          image: game.imageUrl || "/api/placeholder/800/400",
-          isVideo: game.imageUrl && (game.imageUrl.includes('.mp4') || game.imageUrl.includes('.webm') || game.imageUrl.includes('.mov')),
-          category: game.category || "Game"
-        }));
+        // Get featured games (top 4 by play count or recent games)
+        const featuredGames = games
+          .sort((a, b) => (b.count || 0) - (a.count || 0))
+          .slice(0, 4)
+          .map(game => ({
+            id: game._id,
+            title: game.title,
+            image: game.imageUrl || "/api/placeholder/800/400",
+            isVideo: game.imageUrl && (game.imageUrl.includes('.mp4') || game.imageUrl.includes('.webm') || game.imageUrl.includes('.mov')),
+            category: game.category || "Game"
+          }));
         setFeatured(featuredGames);
         
         // Sort by count for popular games (take top 6)
