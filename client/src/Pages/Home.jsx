@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/common/Footer';
 import GameCard from '../components/common/GameCard';
@@ -118,7 +118,6 @@ const Categories = () => {
 
 // Enhanced GameGrid component
 const GameGrid = () => {
-  const { theme } = useTheme();
   const [games, setGames] = useState([]);
   const [error, setError] = useState(null);
 
@@ -155,11 +154,62 @@ const GameGrid = () => {
 // Trending Section
 const TrendingGames = () => {
   const { theme } = useTheme();
-  const trending = [
-    { id: 1, title: "Tetris", plays: "40K", change: "+15%" },
-    { id: 2, title: "Subway Surfers", plays: "50K", change: "+12%" },
-    { id: 3, title: "Temple Run", plays: "30K", change: "+10%" },
-  ];
+  const [trending, setTrending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const handleTrendingClick = async (gameId) => {
+    if (!gameId) return;
+
+    try {
+      // Update game count when clicked
+      await axios.put(`${API_URL}/games/${gameId}/count`, {}, {
+        withCredentials: true
+      });
+      
+      // Navigate to game details page
+      navigate(`/games/${gameId}`);
+    } catch (error) {
+      console.error('Error updating game count:', error);
+      // Still navigate even if count update fails
+      navigate(`/games/${gameId}`);
+    }
+  };
+
+  useEffect(() => {
+    const fetchTrendingGames = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/games`, {
+          withCredentials: true,
+        });
+        const games = response.data.games || [];
+        
+        // Get trending games (simulate trending with recent games)
+        const trendingGames = games.slice(0, 3).map((game, index) => {
+          // Simulate percentage rise based on game popularity and position
+          const baseRise = Math.floor(Math.random() * 15) + 10; // 10-25% base
+          const popularityBonus = Math.floor((game.count || 0) / 100); // Bonus based on popularity
+          const positionBonus = (3 - index) * 5; // Higher bonus for first positions
+          const totalRise = Math.min(baseRise + popularityBonus + positionBonus, 50); // Cap at 50%
+          
+          return {
+            id: game._id || game.id,
+            title: game.title,
+            plays: game.count ? `${Math.floor(game.count / 1000)}K` : "0K",
+            change: `+${totalRise}%`
+          };
+        });
+        
+        setTrending(trendingGames);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch trending games:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchTrendingGames();
+  }, []);
 
   return (
     <div className={`p-6 rounded-2xl shadow-lg hover:shadow-[#06c1ff]/10 ${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 hover:border-[#06c1ff]/30 transition-all duration-300`}>
@@ -168,23 +218,44 @@ const TrendingGames = () => {
         <h3 className={`font-bold ${theme.primary}`}>Trending Now</h3>
       </div>
       <div className="space-y-4">
-        {trending.map((game, index) => (
-          <motion.div 
-            key={game.id} 
-            className={`flex items-center justify-between p-3 rounded-xl ${theme.cardBg} hover:bg-[#06c1ff]/5 transition-all duration-300 cursor-pointer`}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-[#06c1ff] opacity-80 text-sm font-medium">#{index + 1}</span>
-              <span className={`font-medium ${theme.secondary}`}>{game.title}</span>
+        {loading ? (
+          // Loading skeleton
+          Array.from({ length: 3 }).map((_, index) => (
+            <div key={`skeleton-${index}`} className={`flex items-center justify-between p-3 rounded-xl ${theme.cardBg} animate-pulse`}>
+              <div className="flex items-center gap-3">
+                <div className="w-4 h-4 bg-gray-200/10 rounded" />
+                <div className="w-20 h-4 bg-gray-200/10 rounded" />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-3 bg-gray-200/10 rounded" />
+                <div className="w-8 h-3 bg-gray-200/10 rounded" />
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <span className={`text-sm ${theme.muted}`}>{game.plays}</span>
-              <span className="text-xs text-[#06c1ff]">{game.change}</span>
-            </div>
-          </motion.div>
-        ))}
+          ))
+        ) : trending.length > 0 ? (
+          trending.map((game, index) => (
+            <motion.div 
+              key={game.id} 
+              onClick={() => handleTrendingClick(game.id)}
+              className={`flex items-center justify-between p-3 rounded-xl ${theme.cardBg} hover:bg-[#06c1ff]/5 transition-all duration-300 cursor-pointer`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-[#06c1ff] opacity-80 text-sm font-medium">#{index + 1}</span>
+                <span className={`font-medium ${theme.secondary}`}>{game.title}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`text-sm ${theme.muted}`}>{game.plays}</span>
+                <span className="text-xs text-green-400">{game.change}</span>
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <div className={`text-center py-4 ${theme.secondary}`}>
+            No trending games available
+          </div>
+        )}
       </div>
     </div>
   );
