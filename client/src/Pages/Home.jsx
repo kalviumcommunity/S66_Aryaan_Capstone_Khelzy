@@ -176,7 +176,7 @@ const TrendingGames = () => {
         duration: 4000,
         position: 'top-center',
       });
-      // Still navigate but with warning shown
+      // Navigate even if count update fails
       navigate(`/games/${gameId}`);
     }
   };
