@@ -81,12 +81,12 @@ function LandingPage() {
         
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch games:", error);
+        console.error("Failed to fetch games:", error); 
         setLoading(false);
       }
     };
     
-    fetchGames();
+    
   }, []);
 
   const homePage=()=>{
