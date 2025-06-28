@@ -31,11 +31,11 @@ authRouter.get('/google/callback',
 
         const cookieOptions = {
             httpOnly: true,
-            secure: true, // Always use secure in modern browsers
-            sameSite: 'none', // Required for cross-origin
-            maxAge: 3600000, // 1 hour
+            secure: true,
+            sameSite: 'none',
             path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
+            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+            maxAge: 28800000 // 8 hours
         };
 
         const refreshCookieOptions = {
