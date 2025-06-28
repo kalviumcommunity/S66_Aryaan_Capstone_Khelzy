@@ -8,7 +8,7 @@
   ],
   "routes": [
     {
-      "src": "https://khelzy.vercel.app",
+      "src": "/(.*)",
       "dest": "index.js"
     }
   ]
