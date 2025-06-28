@@ -10,6 +10,7 @@ import { API_URL } from '../config';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+
 // Featured Games Carousel
 const FeaturedGames = () => {
 
@@ -24,10 +25,10 @@ const FeaturedGames = () => {
         });
         const games = response.data.games || [];
         
-        // Get featured games (top 4 by play count or recent games)
-        const featuredGames = games
-          .sort((a, b) => (b.count || 0) - (a.count || 0))
-          .slice(0, 4)
+        // Get featured games (randomly select 4 games)
+        const shuffledGames = games.sort(() => Math.random() - 0.5);
+        const featuredGames = shuffledGames
+          .slice(0, Math.min(3))
           .map(game => ({
             id: game._id,
             title: game.title,
@@ -48,12 +49,25 @@ fetchGames();
 
 
     useEffect(() => {
+      if (featured.length === 0) return;
+      
       const timer = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % featured.length);
       }, 5000);
       
       return () => clearInterval(timer);
     }, [featured.length]);
+
+  // Don't render if no featured games are loaded yet
+  if (!featured.length || !featured[currentSlide]) {
+    return (
+      <div className={`relative overflow-hidden rounded-2xl shadow-lg ${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 transition-all duration-300`}>
+        <div className="aspect-[21/9] relative overflow-hidden flex items-center justify-center">
+          <div className={`text-lg ${theme.secondary}`}>Loading featured games...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-[#06c1ff]/10 ${theme.cardBg} backdrop-blur-sm ${theme.border} border-2 hover:border-[#06c1ff]/30 transition-all duration-300`}>
@@ -74,14 +88,14 @@ fetchGames();
           >
             <div className="relative h-full">
               <img 
-                src={featured[currentSlide].image} 
-                alt={featured[currentSlide].title}
+                src={featured[currentSlide]?.image } 
+                alt={featured[currentSlide]?.title || "Featured Game"}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0b2d72]/90 via-[#0b2d72]/50 to-transparent" />
               <div className="absolute bottom-0 left-0 p-8">
-                <h2 className="text-3xl font-bold mb-2 text-white">{featured[currentSlide].title}</h2>
-                <p className="text-lg text-gray-200">{featured[currentSlide].description}</p>
+                <h2 className="text-3xl font-bold mb-2 text-white">{featured[currentSlide]?.title || "Loading..."}</h2>
+                <p className="text-lg text-gray-200">{featured[currentSlide]?.description || "Featured game"}</p>
               </div>
             </div>
           </motion.div>
@@ -155,7 +169,14 @@ const GameGrid = () => {
           withCredentials: true,
         });
         
-        setGames(response.data.games || []);
+        const allGames = response.data.games || [];
+        
+        // Sort games by count in decreasing order and take top 12
+        const popularGames = allGames
+          .sort((a, b) => (b.count || 0) - (a.count || 0))
+          .slice(0, 12);
+        
+        setGames(popularGames);
       } catch (error) {
         setError('Failed to fetch games');
         console.error('Error fetching games:', error);
