@@ -23,7 +23,7 @@ authRouter.get('/google', passport.authenticate('google', { scope: ['profile', '
 
 authRouter.get('/google/callback', 
     passport.authenticate('google', { 
-        failureRedirect: process.env.SERVER_URL;
+        failureRedirect: process.env.SERVER_URL
     }),
     async (req, res) => {
         const user = await UserModel.findById(req.user._id)
