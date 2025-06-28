@@ -5,6 +5,7 @@ import * as faceapi from "face-api.js";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../config";
 import { useAuth } from "../../context/AuthContext";
+import Loading from '../../components/common/Loading'
 
 const FaceAuth = () => {
   const videoRef = useRef(null);
@@ -28,6 +29,7 @@ const FaceAuth = () => {
       }
     };
   }, [isAuthenticated, navigate]);
+
   const loadModels = async () => {
     try {
       setIsLoading(true);
@@ -96,6 +98,7 @@ const FaceAuth = () => {
       .withFaceDescriptor();
     return detection ? Array.from(detection.descriptor) : null;
   };
+
   const register = async () => {
     if (!email) {
       setVerificationStatus({
@@ -148,6 +151,7 @@ const FaceAuth = () => {
       setIsVerifying(false);
     }
   };
+
   const login = async () => {
     if (!email) {
       setVerificationStatus({
@@ -187,8 +191,8 @@ const FaceAuth = () => {
         message: result.message,
       });
       
+      stopCamera();
       if (result.success) {
-        stopCamera();
         setTimeout(() => {
           navigate("/home");
         }, 1500);
@@ -206,6 +210,18 @@ const FaceAuth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0b2d72] via-[#0f3b8f] to-[#0b2d72] flex items-center justify-center p-4">
+      {verificationStatus?.success ? (
+        <div className="flex flex-col items-center justify-center h-screen bg-white">
+          <Loading />
+        </div> 
+      ) : (
+        verificationStatus && (
+          <p className="text-center mt-4 text-white text-lg">
+            {verificationStatus.message}
+          </p>
+        )
+      )}
+      
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div

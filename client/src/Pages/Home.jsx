@@ -12,14 +12,40 @@ import toast from 'react-hot-toast';
 
 // Featured Games Carousel
 const FeaturedGames = () => {
-  const featured = [
-    { id: 1, title: "Smash Karts", image: "https://imgs.search.brave.com/0ogJNo2DsdXVOob4oH-YXCgInkZsVzecV132tNRL4xk/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pbWdz/LnNlYXJjaC5icmF2/ZS5jb20vOUFCUlA5/cXh5eUFheGFpbU90/VWZoRUhNVnlueGtP/U3F4M3dBWUV2bFp6/dy9yczpmaXQ6NTAw/OjA6MDowL2c6Y2Uv/YUhSMGNITTZMeTl6/ZEdGMC9hV011ZDJs/cmFXRXVibTlqL2Iy/OXJhV1V1Ym1WMEwz/TnQvWVhOb0xXdGhj/blJ6TDJsdC9ZV2Rs/Y3k5bEwyVTJMMU5w/L2RHVXRiRzluYnk1/d2JtY3YvY21WMmFY/TnBiMjR2YkdGMC9a/WE4wUDJOaVBUSXdN/akV4L01qQXpNakl5/TnpVMA.jpeg", description: "Race against players worldwide!" },
-    { id: 2, title: "Temple Run", image: "https://placehold.co/800x400/0b2d72/06c1ff", description: "Run, jump and slide to escape!" },
-    { id: 3, title: "Subway Surfers", image: "https://placehold.co/800x400/0b2d72/06c1ff", description: "Endless running adventure!" }
-  ];
 
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [featured, setFeatured] = useState([]);
   const { theme } = useTheme();
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/games`, {
+          withCredentials: true,
+        });
+        const games = response.data.games || [];
+        
+        // Get featured games (top 4 by play count or recent games)
+        const featuredGames = games
+          .sort((a, b) => (b.count || 0) - (a.count || 0))
+          .slice(0, 4)
+          .map(game => ({
+            id: game._id,
+            title: game.title,
+            image: game.imageUrl || "/api/placeholder/800/400",
+            isVideo: game.imageUrl && (game.imageUrl.includes('.mp4') || game.imageUrl.includes('.webm') || game.imageUrl.includes('.mov')),
+            category: game.category || "Game"
+          }));
+        setFeatured(featuredGames);
+        }catch(error){
+          console.error("Failed to fetch games:", error); 
+          
+  }
+}
+fetchGames();
+
+  },[])
+
+
 
     useEffect(() => {
       const timer = setInterval(() => {
