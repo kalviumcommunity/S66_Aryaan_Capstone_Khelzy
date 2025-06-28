@@ -3,7 +3,7 @@ const passport = require('passport');
 const { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken } = require('../Controller/user.controller');
 const { verifyToken, createTokens } = require('../MiddleWare/authMiddleware');
 const { UserModel } = require('../models/user.model');
-require('dotenv').config()
+
 
 const userRouter = express.Router();
 const authRouter = express.Router();
@@ -23,7 +23,7 @@ authRouter.get('/google', passport.authenticate('google', { scope: ['profile', '
 
 authRouter.get('/google/callback', 
     passport.authenticate('google', { 
-        failureRedirect: process.env.SERVER_URL
+        failureRedirect: process.env.SERVER_URL;
     }),
     async (req, res) => {
         const user = await UserModel.findById(req.user._id)
@@ -31,11 +31,11 @@ authRouter.get('/google/callback',
 
         const cookieOptions = {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
+            secure: true, // Always use secure in modern browsers
+            sameSite: 'none', // Required for cross-origin
+            maxAge: 3600000, // 1 hour
             path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
-            maxAge: 28800000 // 8 hours
+            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
         };
 
         const refreshCookieOptions = {
@@ -46,7 +46,7 @@ authRouter.get('/google/callback',
         res.cookie('token', accessToken, cookieOptions);
         res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-        const frontendURL = process.env.FRONTEND_URL;
+        const frontendURL = process.env.FRONTEND_URL
             
         // Passing token in URL for the initial verification only
         // The actual auth will use the HttpOnly cookies set above
