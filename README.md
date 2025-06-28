@@ -6,10 +6,8 @@ Khelzy is a platform that will bring joy to your system without the need to down
 ### Key Features
 * Designer and brand user roles
 * Design listing and pitch submission
-* File upload functionality
 * JWT and third-party authentication
 * Mood board creation
-* Real-time feedback and collaboration tools
 
 ---
 
