@@ -37,7 +37,7 @@ authRouter.get('/google/callback',
     })(req, res, (err) => {
       if (err) {
         console.error('Google Auth Error:', err);
-        return res.redirect(`${process.env.FRONTEND_URL}/auth?error=Authentication failed`);
+        return res.redirect(`${process.env.FRONTEND_URL}/auth?error=${encodeURIComponent('Authentication failed')}`);
       }
       next();
     });
@@ -75,14 +75,14 @@ authRouter.get('/google/callback',
       res.redirect(`${process.env.FRONTEND_URL}/oauth-callback`);
     } catch (error) {
       console.error('Auth Callback Error:', error);
-      res.redirect(`${process.env.FRONTEND_URL}/auth?error=Authentication failed`);
+      res.redirect(`${process.env.FRONTEND_URL}/auth?error=${encodeURIComponent('Authentication failed')}`);
     }
   }
 );
 
 // Add error recovery route
 authRouter.get('/auth-error', (req, res) => {
-  res.redirect(`${process.env.FRONTEND_URL}/auth?error=Please try again`);
+  res.redirect(`${process.env.FRONTEND_URL}/auth?error=${encodeURIComponent('Please try again')}`);
 });
 
 module.exports = { userRouter, authRouter };
