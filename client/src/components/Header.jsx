@@ -1,35 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Menu, X, Home, BarChart2, Grid, Gamepad, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { API_URL } from '../config';
-import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { theme } = useTheme();
-
-
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post(`${API_URL}/user/logout`, {}, {
-        withCredentials: true
-      });
-
-      if (response.status === 200) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = '/login';
-      } else {
-        console.error('Logout failed:', response.data);
-        alert('Logout failed. Please try again.');
-      }
+      // Call the centralized logout function from AuthContext
+      await logout();
+      
+      // Redirect to login page
+      window.location.href = '/login';
     } catch (error) {
       console.error('Logout error:', error);
-      alert('Network error during logout. Please try again.');
+      
+      // Force redirect even if logout fails
+      window.location.href = '/login';
     }
   };
 
