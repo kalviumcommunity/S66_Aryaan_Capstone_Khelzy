@@ -3,27 +3,6 @@ const jwt = require('jsonwebtoken');
 const { UserModel } = require('../models/user.model');
 const { createTokens } = require('../MiddleWare/authMiddleware');
 
-/**
- * Get standardized cookie options for auth tokens
- * @param {number} maxAge - Maximum age for the cookie in milliseconds (defaults to 24h, max 365 days)
- * @returns {object} Cookie configuration object
- */
-const getCookieOptions = (maxAge = 24 * 60 * 60 * 1000) => {
-    // Validate maxAge to prevent security issues with invalid cookie expiration times
-    if (typeof maxAge !== 'number' || maxAge <= 0 || maxAge > 365 * 24 * 60 * 60 * 1000) {
-        maxAge = 24 * 60 * 60 * 1000; // fallback to 24 hours
-    }
-    
-    return {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' || process.env.HTTPS === 'true',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
-        maxAge
-    };
-};
-
 
 
 const register = async (req, res) => {
@@ -82,9 +61,19 @@ const login = async (req, res) => {
         // Generate access and refresh tokens
         const { accessToken, refreshToken } = createTokens(user);
 
-        // Use shared cookie options utility
-        const cookieOptions = getCookieOptions(24 * 60 * 60 * 1000); // 24 hours
-        const refreshCookieOptions = getCookieOptions(7 * 24 * 60 * 60 * 1000); // 7 days
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+            maxAge: 28800000 // 8 hours
+        };
+
+        const refreshCookieOptions = {
+            ...cookieOptions,
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        };
 
         // Set tokens in cookies
         res.cookie('token', accessToken, cookieOptions);
@@ -111,12 +100,22 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        // Use shared cookie options utility but exclude maxAge for clearing
-        const { maxAge, ...cookieOptions } = getCookieOptions();
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
+        };
 
-        // Clear auth cookies once with matching options
+        // Clear auth cookies with matching options
         res.clearCookie('token', cookieOptions);
         res.clearCookie('refreshToken', cookieOptions);
+
+        // Clear any other session-related cookies
+        Object.keys(req.cookies).forEach(cookieName => {
+            res.clearCookie(cookieName, cookieOptions);
+        });
 
         res.status(200).json({
             success: true,
@@ -223,9 +222,19 @@ const refreshAccessToken = async (req, res) => {
         // Generate new tokens
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = createTokens(user);
 
-        // Use shared cookie options utility
-        const cookieOptions = getCookieOptions(24 * 60 * 60 * 1000); // 24 hours
-        const refreshCookieOptions = getCookieOptions(7 * 24 * 60 * 60 * 1000); // 7 days
+        const cookieOptions = {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+            maxAge: 3600000 // 1 hour
+        };
+
+        const refreshCookieOptions = {
+            ...cookieOptions,
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        };
 
         // Set new tokens in cookies
         res.cookie('token', newAccessToken, cookieOptions);
