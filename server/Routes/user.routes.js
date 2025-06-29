@@ -59,14 +59,15 @@ authRouter.get('/google/callback',
         avatar: user.avatar
       };
       
-      const userDataParam = encodeURIComponent(JSON.stringify(userData));
+      // Store user data in secure token instead of URL params
+      const userToken = jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: '24h' });
       
       // Cookie options for access token
       const cookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 3600000, // 1 hour
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
         path: '/'
       };
 
@@ -79,7 +80,7 @@ authRouter.get('/google/callback',
       res.cookie('token', accessToken, cookieOptions);
       res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-      res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${accessToken}&user=${userDataParam}`);
+      res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${accessToken}&userToken=${userToken}`);
     } catch (error) {
       console.error('Auth Callback Error:', error);
       res.redirect(`${process.env.FRONTEND_URL}/auth?error=Authentication failed`);
