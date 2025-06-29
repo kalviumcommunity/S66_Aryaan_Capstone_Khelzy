@@ -3,6 +3,7 @@ const passport = require('passport');
 const { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken } = require('../Controller/user.controller');
 const { verifyToken, createTokens } = require('../MiddleWare/authMiddleware');
 const { UserModel } = require('../models/user.model');
+require('dotenv').config()
 
 
 const userRouter = express.Router();
@@ -23,9 +24,7 @@ authRouter.get('/google', passport.authenticate('google', { scope: ['profile', '
 
 authRouter.get('/google/callback', 
     passport.authenticate('google', { 
-        failureRedirect: process.env.NODE_ENV === 'production' 
-            ? process.env.FRONTEND_URL 
-            : 'http://localhost:5173'
+        failureRedirect: process.env.SERVER_URL
     }),
     async (req, res) => {
         const user = await UserModel.findById(req.user._id)
@@ -33,11 +32,11 @@ authRouter.get('/google/callback',
 
         const cookieOptions = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+            secure: true, // Always use secure in modern browsers
+            sameSite: 'none', // Required for cross-origin
             maxAge: 3600000, // 1 hour
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' 
         };
 
         const refreshCookieOptions = {
@@ -48,9 +47,7 @@ authRouter.get('/google/callback',
         res.cookie('token', accessToken, cookieOptions);
         res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-        const frontendURL = process.env.NODE_ENV === 'production' 
-            ? process.env.FRONTEND_URL 
-            : 'http://localhost:5173';
+        const frontendURL = process.env.FRONTEND_URL || `http://localhost:5173`;
             
         // Passing token in URL for the initial verification only
         // The actual auth will use the HttpOnly cookies set above

@@ -5,7 +5,6 @@ import { API_URL } from '../config';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
 import ThemeToggle from './ThemeToggle';
-import toast from 'react-hot-toast';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -16,50 +15,21 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      // Clear client-side storage first
-      localStorage.clear();
-      sessionStorage.clear();
-
       const response = await axios.post(`${API_URL}/user/logout`, {}, {
-        withCredentials: true,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        withCredentials: true
       });
 
       if (response.status === 200) {
-        // Show success toast before redirect
-        toast.success('Logged out successfully!', {
-          duration: 2000,
-          position: 'top-right',
-        });
-        // Small delay to show the toast before redirect
-        setTimeout(() => {
-          navigate('/login', { replace: true });
-        }, 500);
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '/login';
       } else {
         console.error('Logout failed:', response.data);
-        // Show error toast notification instead of intrusive alert
-        toast.error('Logout failed on server, but you will be redirected to login.', {
-          duration: 4000,
-          position: 'top-right',
-        });
-        // Delay redirect slightly to show toast
-        setTimeout(() => {
-          navigate('/login', { replace: true });
-        }, 1000);
+        alert('Logout failed. Please try again.');
       }
     } catch (error) {
       console.error('Logout error:', error);
-      // Show error toast for network/server errors
-      toast.error('Network error during logout. Redirecting to login...', {
-        duration: 3000,
-        position: 'top-right',
-      });
-      // Redirect even on error (storage already cleared at the beginning)
-      setTimeout(() => {
-        navigate('/login', { replace: true });
-      }, 1000);
+      alert('Network error during logout. Please try again.');
     }
   };
 

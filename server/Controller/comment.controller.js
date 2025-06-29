@@ -31,13 +31,27 @@ const addComment = async (req, res) => {
 
 const getCommentsByGame = async (req, res) => {
   try {
-    const  {gameId}  = req.params;
+    const {gameId} = req.params;
 
     const comments = await Comment.find({gameId})
       .populate('user', 'name profilePicture') // adjust fields you want from User
       .sort({ createdAt: -1 });
+    
+    // Ensure each comment has valid user data
+    const processedComments = comments.map(comment => {
+      const rawComment = comment.toObject();
+      // If user is null or undefined, provide a default user object
+      if (!rawComment.user) {
+        rawComment.user = {
+          _id: null,
+          name: 'Unknown User',
+          profilePicture: null
+        };
+      }
+      return rawComment;
+    });
 
-    res.status(200).json(comments);
+    res.status(200).json(processedComments);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch comments' ,error:error.message});
   }

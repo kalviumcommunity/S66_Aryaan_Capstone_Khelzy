@@ -155,23 +155,21 @@ const Desc = () => {
   // Update the checkIsLiked function
   useEffect(() => {
     const checkIsLiked = async () => {
-        if (!currentUser) return;
-        try {
-            const response = await axios.get(
-                `${API_URL}/favo/check/${id}`,
-                { withCredentials: true }
-            );
-            // Set isLiked to false if there's no status
-            setIsLiked(response.data.status || false);
-        } catch (error) {
-            console.error("Error checking like status:", error);
-            setIsLiked(false);
-        }
+      if (!currentUser) return;
+      try {
+        const response = await axios.get(`${API_URL}/favo/check/${id}`, {
+          withCredentials: true,
+        });
+        // Set isLiked to false if there's no status
+        setIsLiked(response.data.status || false);
+      } catch (error) {
+        console.error("Error checking like status:", error);
+        setIsLiked(false);
+      }
     };
 
     checkIsLiked();
   }, [currentUser, id]);
-
 
   const postComments = async (e) => {
     e.preventDefault();
@@ -235,7 +233,7 @@ const Desc = () => {
         }
       } else {
         const response = await axios.delete(
-          `${API_URL}/favo/unlike/${id}`,  // Changed to match backend route
+          `${API_URL}/favo/unlike/${id}`, // Changed to match backend route
           { withCredentials: true }
         );
         setIsLiked(false);
@@ -432,7 +430,10 @@ const Desc = () => {
         {/* Breadcrumbs */}
         {!isFullscreen && (
           <div className="flex items-center gap-2 text-[#06c1ff]/70 mb-6 text-sm">
-            <Link to="/games" className="hover:text-[#06c1ff] transition-colors">
+            <Link
+              to="/games"
+              className="hover:text-[#06c1ff] transition-colors"
+            >
               Games
             </Link>
             <ChevronRight size={16} />
@@ -679,6 +680,7 @@ const Desc = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
+                      {" "}
                       {comments.map((comment) => (
                         <div
                           key={comment._id}
@@ -686,10 +688,10 @@ const Desc = () => {
                         >
                           <div className="flex items-start gap-4">
                             <div className="w-10 h-10 rounded-full bg-[#06c1ff]/20 flex items-center justify-center ring-2 ring-[#06c1ff]/20">
-                              {comment.user.profilePicture ? (
+                              {comment.user && comment.user.profilePicture ? (
                                 <img
                                   src={comment.user.profilePicture}
-                                  alt={comment.user.name}
+                                  alt={comment.user?.name || "User"}
                                   className="w-full h-full rounded-full object-cover"
                                 />
                               ) : (
@@ -754,57 +756,59 @@ const Desc = () => {
                                     className={`${theme.secondary} text-base leading-relaxed`}
                                   >
                                     {comment.text}
-                                  </p>
-                                  {comment.user._id === currentUser?.id && (
-                                    <div className="flex items-center gap-4 mt-2">
-                                      <button
-                                        onClick={() => {
-                                          setEditingCommentId(comment._id);
-                                          setEditText(comment.text);
-                                        }}
-                                        className="text-[#06c1ff] text-sm hover:text-[#06c1ff]/70 hover:underline flex items-center gap-1"
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="14"
-                                          height="14"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
+                                  </p>{" "}
+                                  {comment.user &&
+                                    currentUser &&
+                                    comment.user._id === currentUser.id && (
+                                      <div className="flex items-center gap-4 mt-2">
+                                        <button
+                                          onClick={() => {
+                                            setEditingCommentId(comment._id);
+                                            setEditText(comment.text);
+                                          }}
+                                          className="text-[#06c1ff] text-sm hover:text-[#06c1ff]/70 hover:underline flex items-center gap-1"
                                         >
-                                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                        </svg>
-                                        Edit
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          deleteComment(comment._id)
-                                        }
-                                        className="text-red-500 text-sm hover:text-red-400 hover:underline flex items-center gap-1"
-                                      >
-                                        <svg
-                                          xmlns="http://www.w3.org/2000/svg"
-                                          width="14"
-                                          height="14"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          strokeWidth="2"
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                          </svg>
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            deleteComment(comment._id)
+                                          }
+                                          className="text-red-500 text-sm hover:text-red-400 hover:underline flex items-center gap-1"
                                         >
-                                          <path d="M3 6h18" />
-                                          <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                        </svg>
-                                        Delete
-                                      </button>
-                                    </div>
-                                  )}
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                          </svg>
+                                          Delete
+                                        </button>
+                                      </div>
+                                    )}
                                 </>
                               )}
                             </div>
