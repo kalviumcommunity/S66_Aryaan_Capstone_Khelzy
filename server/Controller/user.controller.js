@@ -5,12 +5,12 @@ const { createTokens } = require('../MiddleWare/authMiddleware');
 
 /**
  * Get standardized cookie options for auth tokens
- * @param {number} maxAge - Maximum age for the cookie in milliseconds
+ * @param {number} maxAge - Maximum age for the cookie in milliseconds (defaults to 24h, max 365 days)
  * @returns {object} Cookie configuration object
  */
 const getCookieOptions = (maxAge = 24 * 60 * 60 * 1000) => {
     // Validate maxAge to prevent security issues with invalid cookie expiration times
-    if (typeof maxAge !== 'number' || maxAge <= 0) {
+    if (typeof maxAge !== 'number' || maxAge <= 0 || maxAge > 365 * 24 * 60 * 60 * 1000) {
         maxAge = 24 * 60 * 60 * 1000; // fallback to 24 hours
     }
     
