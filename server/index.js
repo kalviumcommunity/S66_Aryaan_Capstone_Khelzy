@@ -20,13 +20,29 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Enable CORS with specific origins and configuration
-// Update the CORS configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL || `http://localhost:5173`,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      process.env.FRONTEND_URL,
+      'http://localhost:5173',
+      'https://khelzy.vercel.app', // Add your actual frontend Vercel URL
+      // Add any other domains you need
+    ].filter(Boolean);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
   exposedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200 // For legacy browser support
 }));
 
 app.enable('trust proxy'); // Add this line for secure cookies to work
