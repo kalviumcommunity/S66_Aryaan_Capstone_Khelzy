@@ -11,16 +11,15 @@ const getCookieOptions = (maxAge = 24 * 60 * 60 * 1000) => {
         secure: isProduction || process.env.HTTPS === 'true',
         sameSite: isProduction ? 'none' : 'lax',
         path: '/',
-        // Only set domain in production for cross-subdomain sharing
-        // Omit domain for same-origin requests to avoid issues
-        ...(isProduction && { domain: '.vercel.app' }),
         maxAge
     };
     
-    // Debug logging in development
-    if (!isProduction) {
-        console.log('Cookie options:', options);
-    }
+    // Debug logging for all environments to troubleshoot production issues
+    console.log('Cookie options created:', {
+        ...options,
+        environment: process.env.NODE_ENV,
+        frontendUrl: process.env.FRONTEND_URL
+    });
     
     return options;
 };

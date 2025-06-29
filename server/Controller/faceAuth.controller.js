@@ -1,7 +1,6 @@
 const { UserModel } = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const { createTokens } = require("../MiddleWare/authMiddleware");
-const { getCookieOptions } = require("../utils/cookieUtils");
 
 // In-memory tracking for failed login attempts
 const failedAttempts = new Map();
@@ -174,12 +173,23 @@ const login = async (req, res) => {
       profilePicture: user.profilePicture,
     });
 
-    // Use standardized cookie options
-    const cookieOptions = getCookieOptions(3600000); // 1 hour
-    const refreshCookieOptions = getCookieOptions(7 * 24 * 60 * 60 * 1000); // 7 days
-
-    res.cookie("token", accessToken, cookieOptions);
-    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
+    res.cookie("token", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+    
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      path: '/',
+      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
     res.json({
       verified: true,
       ...(process.env.NODE_ENV === 'development' && { similarity }),
