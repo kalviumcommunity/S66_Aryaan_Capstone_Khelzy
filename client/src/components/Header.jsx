@@ -36,9 +36,7 @@ const Header = () => {
       }
     } catch (error) {
       console.error('Logout error:', error);
-      // Clear storage and redirect even on error
-      localStorage.clear();
-      sessionStorage.clear();
+      // Redirect even on error (storage already cleared at the beginning)
       window.location.replace('/login');
     }
   };

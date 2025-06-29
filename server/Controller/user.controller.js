@@ -100,36 +100,18 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        // Base cookie options - should match what was used to set cookies
-        const baseCookieOptions = {
+        // Use the exact same cookie options that were used to set the cookies
+        const cookieOptions = {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production' || process.env.HTTPS === 'true',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            path: '/'
-        };
-
-        // For production with domain
-        const productionCookieOptions = {
-            ...baseCookieOptions,
+            path: '/',
             domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
         };
 
-        // Clear auth cookies with multiple configurations to ensure removal
-        // Try clearing with production domain settings
-        res.clearCookie('token', productionCookieOptions);
-        res.clearCookie('refreshToken', productionCookieOptions);
-
-        // Try clearing without domain (for local development)
-        res.clearCookie('token', baseCookieOptions);
-        res.clearCookie('refreshToken', baseCookieOptions);
-
-        // Also try clearing with minimal options
-        res.clearCookie('token', { path: '/' });
-        res.clearCookie('refreshToken', { path: '/' });
-
-        // Try clearing with just httpOnly
-        res.clearCookie('token', { httpOnly: true, path: '/' });
-        res.clearCookie('refreshToken', { httpOnly: true, path: '/' });
+        // Clear auth cookies once with matching options
+        res.clearCookie('token', cookieOptions);
+        res.clearCookie('refreshToken', cookieOptions);
 
         res.status(200).json({
             success: true,
