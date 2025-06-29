@@ -15,21 +15,31 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
+      // Clear client-side storage first
+      localStorage.clear();
+      sessionStorage.clear();
+
       const response = await axios.post(`${API_URL}/user/logout`, {}, {
-        withCredentials: true
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       if (response.status === 200) {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = '/login';
+        // Force a hard reload to clear any cached data
+        window.location.replace('/login');
       } else {
         console.error('Logout failed:', response.data);
-        alert('Logout failed. Please try again.');
+        // Even if server logout fails, redirect to login
+        window.location.replace('/login');
       }
     } catch (error) {
       console.error('Logout error:', error);
-      alert('Network error during logout. Please try again.');
+      // Clear storage and redirect even on error
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.replace('/login');
     }
   };
 
