@@ -1,4 +1,5 @@
-export const API_URL = 'https://s66-aryaan-capstone-khelzy.onrender.com';
+export const API_URL = import.meta.env.VITE_API_URL 
+
 
 
 
