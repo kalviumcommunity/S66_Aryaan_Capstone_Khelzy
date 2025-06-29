@@ -35,7 +35,7 @@ const Header = () => {
         });
         // Small delay to show the toast before redirect
         setTimeout(() => {
-          window.location.replace('/login');
+          navigate('/login', { replace: true });
         }, 500);
       } else {
         console.error('Logout failed:', response.data);
@@ -46,7 +46,7 @@ const Header = () => {
         });
         // Delay redirect slightly to show toast
         setTimeout(() => {
-          window.location.replace('/login');
+          navigate('/login', { replace: true });
         }, 1000);
       }
     } catch (error) {
@@ -58,7 +58,7 @@ const Header = () => {
       });
       // Redirect even on error (storage already cleared at the beginning)
       setTimeout(() => {
-        window.location.replace('/login');
+        navigate('/login', { replace: true });
       }, 1000);
     }
   };
