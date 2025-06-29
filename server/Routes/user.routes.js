@@ -3,6 +3,7 @@ const passport = require('passport');
 const { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken } = require('../Controller/user.controller');
 const { verifyToken, createTokens } = require('../MiddleWare/authMiddleware');
 const { UserModel } = require('../models/user.model');
+require('dotenv').config()
 
 
 const userRouter = express.Router();
@@ -23,7 +24,7 @@ authRouter.get('/google', passport.authenticate('google', { scope: ['profile', '
 
 authRouter.get('/google/callback', 
     passport.authenticate('google', { 
-        failureRedirect: 'http://localhost:5000'
+        failureRedirect: process.env.SERVER_URL
     }),
     async (req, res) => {
         const user = await UserModel.findById(req.user._id)
@@ -46,7 +47,7 @@ authRouter.get('/google/callback',
         res.cookie('token', accessToken, cookieOptions);
         res.cookie('refreshToken', refreshToken, refreshCookieOptions);
 
-        const frontendURL = 'http://localhost:5173';
+        const frontendURL = process.env.FRONTEND_URL;
             
         // Passing token in URL for the initial verification only
         // The actual auth will use the HttpOnly cookies set above
