@@ -10,7 +10,6 @@ const { gameRouter } = require('./Routes/game.routes');
 const commentRouter = require('./Routes/comment.routes');
 const likeRouter = require('./Routes/liked.routes');
 const faceAuthRouter = require('./Routes/faceAuth.routes');
-const { gracefulShutdown } = require('./Controller/faceAuth.controller');
 
 const PORT = process.env.PORT || 5000;
 
@@ -20,10 +19,11 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// Enable CORS with specific origins and configuration
-// Update the CORS configuration
+// Enable CORS with environment-aware configuration
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL 
+    : 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -39,7 +39,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   },
 }));
@@ -60,52 +60,9 @@ app.use('/faceAuth', faceAuthRouter);
 const startServer = async () => {
   try {
     await connectDB();
-    const server = app.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`✅ Server running on port ${PORT}`);
     });
-
-    // Setup graceful shutdown with timeout
-    const SHUTDOWN_TIMEOUT = 5000;
-
-    // Setup shutdown hooks
-    process.on('SIGINT', async () => {
-      const shutdownTimeout = setTimeout(() => {
-        console.error('Graceful shutdown timeout, forcing exit');
-        process.exit(1);
-      }, SHUTDOWN_TIMEOUT);
-      
-      try {
-        // Close server first to stop accepting new connections
-        server.close(() => console.log('Server closed'));
-        // Then run other cleanup tasks
-        await gracefulShutdown();
-      } catch (err) {
-        console.error('Error during graceful shutdown:', err);
-      } finally {
-        clearTimeout(shutdownTimeout);
-        process.exit(0);
-      }
-    });
-
-    process.on('SIGTERM', async () => {
-      const shutdownTimeout = setTimeout(() => {
-        console.error('Graceful shutdown timeout, forcing exit');
-        process.exit(1);
-      }, SHUTDOWN_TIMEOUT);
-      
-      try {
-        // Close server first to stop accepting new connections
-        server.close(() => console.log('Server closed'));
-        // Then run other cleanup tasks
-        await gracefulShutdown();
-      } catch (err) {
-        console.error('Error during graceful shutdown:', err);
-      } finally {
-        clearTimeout(shutdownTimeout);
-        process.exit(0);
-      }
-    });
-
   } catch (error) {
     console.error('❌ Server initialization failed:', error);
     process.exit(1);
