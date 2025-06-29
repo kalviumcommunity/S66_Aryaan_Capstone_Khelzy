@@ -51,17 +51,6 @@ authRouter.get('/google/callback',
       const user = req.user;
       const { accessToken, refreshToken } = createTokens(user);
       
-      const userData = {
-        _id: user._id,
-        email: user.email,
-        name: user.name,
-        credits: user.credits,
-        avatar: user.avatar
-      };
-      
-      // Store user data in secure token instead of URL params
-      const userToken = jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: '24h' });
-      
       // Cookie options for access token
       const cookieOptions = {
         httpOnly: true,
@@ -80,14 +69,8 @@ authRouter.get('/google/callback',
       res.cookie('token', accessToken, cookieOptions);
       res.cookie('refreshToken', refreshToken, refreshCookieOptions);
       
-      // Set user data token as secure HTTP-only cookie
-      res.cookie('userToken', userToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' || process.env.HTTPS === 'true',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 24 * 60 * 60 * 1000,
-        path: '/'
-      });
+      // User data is already included in the access token
+      // No need for additional userToken cookie
 
       res.redirect(`${process.env.FRONTEND_URL}/oauth-callback`);
     } catch (error) {
