@@ -5,11 +5,14 @@ const createTokens = (user) => {
     // Make sure to handle both user._id and user.id formats
     const userId = user._id || user.id;
     
+    // Validate that required user properties exist before accessing them
     const tokenPayload = {
         userId: userId,
-        name: user.name,
-        email: user.email,
-        profilePicture: user.profilePicture,
+        name: user.name || '',
+        email: user.email || '',
+        profilePicture: user.profilePicture || '',
+        credits: user.credits || 0,
+        avatar: user.avatar || ''
     };
 
     const accessToken = jwt.sign(
