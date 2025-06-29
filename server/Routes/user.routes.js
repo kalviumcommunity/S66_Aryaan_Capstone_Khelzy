@@ -31,8 +31,7 @@ authRouter.get('/google',
 authRouter.get('/google/callback',
   (req, res, next) => {
     passport.authenticate('google', { 
-      session: false,
-      prompt: 'select_account consent'
+      session: false
       // Note: Use server-level timeout configuration instead
     })(req, res, (err) => {
       if (err) {
