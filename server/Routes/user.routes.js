@@ -71,7 +71,7 @@ authRouter.get('/google/callback',
       // User data is already included in the access token
       // No need for additional userToken cookie
 
-      res.redirect(`${process.env.FRONTEND_URL}/oauth-callback`);
+      res.redirect(`${process.env.FRONTEND_URL}/auth/callback`);
     } catch (error) {
       console.error('Auth Callback Error:', error);
       res.redirect(`${process.env.FRONTEND_URL}/auth?error=${encodeURIComponent('Authentication failed')}`);
