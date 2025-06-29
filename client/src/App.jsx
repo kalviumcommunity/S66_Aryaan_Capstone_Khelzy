@@ -3,8 +3,7 @@ import {
   BrowserRouter as Router, 
   Routes, 
   Route, 
-  Navigate,
-  useLocation
+  Navigate
 } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
