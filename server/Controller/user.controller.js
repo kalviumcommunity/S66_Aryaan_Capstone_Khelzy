@@ -111,8 +111,8 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        // Use shared cookie options utility
-        const cookieOptions = getCookieOptions();
+        // Use shared cookie options utility but exclude maxAge for clearing
+        const { maxAge, ...cookieOptions } = getCookieOptions();
 
         // Clear auth cookies once with matching options
         res.clearCookie('token', cookieOptions);
