@@ -55,8 +55,9 @@ authRouter.get('/google/callback',
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production' || process.env.HTTPS === 'true',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        path: '/',
+        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/'
       };
 
       // Cookie options for refresh token

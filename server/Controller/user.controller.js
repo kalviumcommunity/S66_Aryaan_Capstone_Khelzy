@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { UserModel } = require('../models/user.model');
 const { createTokens } = require('../MiddleWare/authMiddleware');
+const { getCookieOptions, getClearCookieOptions } = require('../utils/cookieUtils');
 
 
 
@@ -61,19 +62,9 @@ const login = async (req, res) => {
         // Generate access and refresh tokens
         const { accessToken, refreshToken } = createTokens(user);
 
-        const cookieOptions = {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
-            maxAge: 28800000 // 8 hours
-        };
-
-        const refreshCookieOptions = {
-            ...cookieOptions,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        };
+        // Use standardized cookie options
+        const cookieOptions = getCookieOptions(28800000); // 8 hours
+        const refreshCookieOptions = getCookieOptions(7 * 24 * 60 * 60 * 1000); // 7 days
 
         // Set tokens in cookies
         res.cookie('token', accessToken, cookieOptions);
@@ -100,13 +91,8 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        const cookieOptions = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production' || process.env.HTTPS === 'true',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-            path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
-        };
+        // Use standardized cookie options for clearing (without maxAge)
+        const cookieOptions = getClearCookieOptions();
 
         // Clear auth cookies with matching options
         res.clearCookie('token', cookieOptions);
@@ -222,19 +208,9 @@ const refreshAccessToken = async (req, res) => {
         // Generate new tokens
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = createTokens(user);
 
-        const cookieOptions = {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
-            maxAge: 3600000 // 1 hour
-        };
-
-        const refreshCookieOptions = {
-            ...cookieOptions,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        };
+        // Use standardized cookie options
+        const cookieOptions = getCookieOptions(3600000); // 1 hour
+        const refreshCookieOptions = getCookieOptions(7 * 24 * 60 * 60 * 1000); // 7 days
 
         // Set new tokens in cookies
         res.cookie('token', newAccessToken, cookieOptions);
