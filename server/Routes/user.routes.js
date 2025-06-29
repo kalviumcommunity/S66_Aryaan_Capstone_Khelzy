@@ -30,13 +30,14 @@ authRouter.get('/google/callback',
         const user = await UserModel.findById(req.user._id)
         const { accessToken, refreshToken } = createTokens(user);
 
+        const isProduction = process.env.NODE_ENV === 'production';
+        
         const cookieOptions = {
             httpOnly: true,
-            secure: true, // Always use secure in modern browsers
-            sameSite: 'none', // Required for cross-origin
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
             maxAge: 3600000, // 1 hour
-            path: '/',
-            domain: process.env.NODE_ENV === 'production' 
+            path: '/'
         };
 
         const refreshCookieOptions = {

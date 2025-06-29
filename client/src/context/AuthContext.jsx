@@ -23,7 +23,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.get(`${API_URL}/user/check`, {
-        withCredentials: true // Important for sending cookies
+        withCredentials: true,
+        timeout: 10000 // 10 second timeout
       });
       
       setIsAuthenticated(response.data.success || false);
@@ -33,8 +34,13 @@ export const AuthProvider = ({ children }) => {
       return response.data.success || false;
     } catch (error) {
       console.error('Auth check failed:', error);
-      setIsAuthenticated(false);
-      setUser(null);
+      
+      // Only set to false if it's a real auth failure, not a network error
+      if (error.response?.status === 401) {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+      
       return false;
     } finally {
       setLoading(false);
@@ -48,7 +54,9 @@ export const AuthProvider = ({ children }) => {
 
   // Simplified login function - just checks auth status after login
   const login = async () => {
-    await checkAuthStatus();
+    // Add a small delay to ensure cookies are set
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return await checkAuthStatus();
   };
 
   // Face authentication signup
