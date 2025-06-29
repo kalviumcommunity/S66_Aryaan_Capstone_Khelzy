@@ -5,6 +5,7 @@ import { API_URL } from '../config';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
 import ThemeToggle from './ThemeToggle';
+import toast from 'react-hot-toast';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -27,17 +28,38 @@ const Header = () => {
       });
 
       if (response.status === 200) {
-        // Force a hard reload to clear any cached data
-        window.location.replace('/login');
+        // Show success toast before redirect
+        toast.success('Logged out successfully!', {
+          duration: 2000,
+          position: 'top-right',
+        });
+        // Small delay to show the toast before redirect
+        setTimeout(() => {
+          window.location.replace('/login');
+        }, 500);
       } else {
         console.error('Logout failed:', response.data);
-        alert('Logout failed on server, but you will be redirected to login.');
-        window.location.replace('/login');
+        // Show error toast notification instead of intrusive alert
+        toast.error('Logout failed on server, but you will be redirected to login.', {
+          duration: 4000,
+          position: 'top-right',
+        });
+        // Delay redirect slightly to show toast
+        setTimeout(() => {
+          window.location.replace('/login');
+        }, 1000);
       }
     } catch (error) {
       console.error('Logout error:', error);
+      // Show error toast for network/server errors
+      toast.error('Network error during logout. Redirecting to login...', {
+        duration: 3000,
+        position: 'top-right',
+      });
       // Redirect even on error (storage already cleared at the beginning)
-      window.location.replace('/login');
+      setTimeout(() => {
+        window.location.replace('/login');
+      }, 1000);
     }
   };
 
