@@ -31,7 +31,7 @@ const Header = () => {
         window.location.replace('/login');
       } else {
         console.error('Logout failed:', response.data);
-        // Even if server logout fails, redirect to login
+        alert('Logout failed on server, but you will be redirected to login.');
         window.location.replace('/login');
       }
     } catch (error) {
