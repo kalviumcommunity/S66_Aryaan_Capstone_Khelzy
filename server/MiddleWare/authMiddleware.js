@@ -6,6 +6,10 @@ const createTokens = (user) => {
     if (!user) {
         throw new Error('User object is required for token creation');
     }
+    
+    if (!user._id && !user.id) {
+        throw new Error('User must have a valid ID for token creation');
+    }
 
     // Make sure to handle both user._id and user.id formats
     const userId = user._id || user.id;
