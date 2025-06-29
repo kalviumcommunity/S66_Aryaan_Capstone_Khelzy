@@ -9,6 +9,11 @@ const { createTokens } = require('../MiddleWare/authMiddleware');
  * @returns {object} Cookie configuration object
  */
 const getCookieOptions = (maxAge = 24 * 60 * 60 * 1000) => {
+    // Validate maxAge to prevent security issues with invalid cookie expiration times
+    if (typeof maxAge !== 'number' || maxAge <= 0) {
+        maxAge = 24 * 60 * 60 * 1000; // fallback to 24 hours
+    }
+    
     return {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production' || process.env.HTTPS === 'true',
