@@ -2,13 +2,10 @@ const { UserModel } = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const { createTokens } = require("../MiddleWare/authMiddleware");
 
-// In-memory tracking for failed login attempts
+// Track failed attempts (consider using Redis in production)
 const failedAttempts = new Map();
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
-
-// Track last log time to prevent log flooding
-let lastLogTime = 0;
 
 // Utility: Cosine Similarity
 function cosineSimilarity(vec1, vec2) {
@@ -124,33 +121,27 @@ const login = async (req, res) => {
       });
     }
 
-    const SIMILARITY_THRESHOLD = Math.min(Math.max(parseFloat(process.env.FACE_SIMILARITY_THRESHOLD) || 0.92, 0.7), 0.98);
-      if (similarity < SIMILARITY_THRESHOLD) {
-      // Get attempts data from in-memory Map
-      let attempts = failedAttempts.get(normalizedEmail) || { count: 0, lastAttempt: 0 };
+    const SIMILARITY_THRESHOLD = 0.92;
+
+    if (similarity < SIMILARITY_THRESHOLD) {
+      const attemptKey = normalizedEmail;
+      const attempts = failedAttempts.get(attemptKey) || { count: 0, lastAttempt: 0 };
 
       if (attempts.count >= MAX_ATTEMPTS && Date.now() - attempts.lastAttempt < LOCKOUT_TIME) {
-        const timeRemaining = Math.ceil((LOCKOUT_TIME - (Date.now() - attempts.lastAttempt)) / 1000 / 60);
         return res.status(429).json({
-          message: `Too many failed attempts. Please try again in ${timeRemaining} minutes.`,
-          verified: false,
-          retryAfter: timeRemaining
+          message: "Too many failed attempts. Please try again later.",
+          verified: false
         });
       }
       
-      // Rate limit logging to prevent log flooding
-      if (Date.now() - lastLogTime > 60000) {
-        console.warn(`Face verification failed for ${normalizedEmail}: similarity below threshold`);
-        lastLogTime = Date.now();
-      }
-
-      // Reset attempts if lockout time has passed
-      const newCount = (Date.now() - attempts.lastAttempt > LOCKOUT_TIME) ? 1 : attempts.count + 1;
-      const newAttemptData = {
-        count: newCount,
+      // Log without exposing similarity values in production
+      console.warn('Face verification failed: similarity below threshold');
+      
+      // Update failed attempts
+      failedAttempts.set(attemptKey, {
+        count: attempts.count + 1,
         lastAttempt: Date.now()
-      };      // Update failed attempts in memory
-      failedAttempts.set(normalizedEmail, newAttemptData);
+      });
       
       return res.status(401).json({
         message: "Face verification failed - Not enough similarity",
@@ -158,11 +149,9 @@ const login = async (req, res) => {
         ...(process.env.NODE_ENV === 'development' && { similarity, threshold: SIMILARITY_THRESHOLD })
       });
     }
-      // Reset failed attempts on successful login
+
+    // Reset failed attempts on successful login
     failedAttempts.delete(normalizedEmail);
-    
-    // Log successful authentication for security audit trail
-    console.info(`[${new Date().toISOString()}] Successful face authentication for user: ${normalizedEmail} (ID: ${user._id})`);
 
     // Generate tokens using user data
     const { accessToken, refreshToken } = createTokens({
@@ -173,23 +162,22 @@ const login = async (req, res) => {
       profilePicture: user.profilePicture,
     });
 
-    res.cookie("token", accessToken, {
+    const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/',
-      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    });
-    
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      path: '/',
-      domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined,
+      maxAge: 3600000, // 1 hour
+    };
+
+    const refreshCookieOptions = {
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    };
+
+    res.cookie("token", accessToken, cookieOptions);
+    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
     res.json({
       verified: true,
       ...(process.env.NODE_ENV === 'development' && { similarity }),
@@ -290,9 +278,6 @@ const updateFaceEmbedding = async (req, res) => {
     // Update the face embedding
     user.faceEmbedding = faceEmbedding;
     await user.save();
-    
-    // Log successful face embedding update for security audit trail
-    console.info(`[${new Date().toISOString()}] Face authentication updated for user: ${normalizedEmail} (ID: ${user._id})`);
 
     return res.status(200).json({
       success: true,
@@ -337,19 +322,10 @@ const verifyAuth = async (req, res) => {
   }
 };
 
-// Handle graceful shutdown
-const gracefulShutdown = async () => {
-  console.log('Graceful shutdown completed');
-};
-
-// Export only the necessary functions
-
 module.exports = {
   signup,
   login,
   checkEmailExists,
   updateFaceEmbedding,
-  verifyAuth,
-  gracefulShutdown
+  verifyAuth
 };
-

@@ -19,11 +19,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// Enable CORS with environment-aware configuration
+// Enable CORS with specific origins and configuration
+// Update the CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL || `http://localhost:5173`,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -39,7 +38,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: 'none',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   },
 }));

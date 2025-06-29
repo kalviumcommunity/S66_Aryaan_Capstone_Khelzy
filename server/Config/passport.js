@@ -3,7 +3,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const { UserModel } = require('../models/user.model');
 require('dotenv').config();
 
-const PORT = process.env.PORT || 5000;
+const PORT  = process.env.PORT
 
 passport.serializeUser((user, done) => {
     done(null, user.id);
@@ -22,8 +22,8 @@ passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.NODE_ENV === 'production'
-        ? `${process.env.SERVER_URL}/auth/google/callback`
-        : `http://localhost:${PORT}/auth/google/callback`,
+        ? `${process.env.SERVER_URL}/auth/google/callback`  // Changed from onrender.com
+        : `http://localhost:${PORT}/auth/google/callback`,  // Changed to use localhost
     proxy: true
 },
 async (accessToken, refreshToken, profile, done) => {

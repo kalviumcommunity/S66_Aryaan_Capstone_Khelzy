@@ -8,7 +8,6 @@ const addGame = async (req, res) => {
       "description",
       "url",
       "developer",
-      "rating",
       "tags",
     ];
     for (const field of requiredFields) {
