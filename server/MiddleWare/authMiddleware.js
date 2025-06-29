@@ -2,14 +2,25 @@ const jwt = require('jsonwebtoken');
 const { UserModel } = require('../models/user.model');
 
 const createTokens = (user) => {
+    // Validate that required user properties exist before accessing them
+    if (!user) {
+        throw new Error('User object is required for token creation');
+    }
+    
+    if (!user._id && !user.id) {
+        throw new Error('User must have a valid ID for token creation');
+    }
+
     // Make sure to handle both user._id and user.id formats
     const userId = user._id || user.id;
     
     const tokenPayload = {
         userId: userId,
-        name: user.name,
-        email: user.email,
-        profilePicture: user.profilePicture,
+        name: user.name || '',
+        email: user.email || '',
+        profilePicture: user.profilePicture || '',
+        credits: user.credits || 0,
+        avatar: user.avatar || ''
     };
 
     const accessToken = jwt.sign(
