@@ -101,22 +101,27 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
+        const isProduction = process.env.NODE_ENV === 'production';
+        
         const cookieOptions = {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
+            path: '/'
         };
 
         // Clear auth cookies with matching options
         res.clearCookie('token', cookieOptions);
         res.clearCookie('refreshToken', cookieOptions);
 
-        // Clear any other session-related cookies
-        Object.keys(req.cookies).forEach(cookieName => {
-            res.clearCookie(cookieName, cookieOptions);
-        });
+        // Clear any other session-related cookies if they exist
+        if (req.cookies) {
+            Object.keys(req.cookies).forEach(cookieName => {
+                if (cookieName !== 'token' && cookieName !== 'refreshToken') {
+                    res.clearCookie(cookieName, cookieOptions);
+                }
+            });
+        }
 
         res.status(200).json({
             success: true,
@@ -223,13 +228,14 @@ const refreshAccessToken = async (req, res) => {
         // Generate new tokens
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = createTokens(user);
 
+        const isProduction = process.env.NODE_ENV === 'production';
+        
         const cookieOptions = {
             httpOnly: true,
-            secure: true,
-            sameSite: 'none',
+            secure: isProduction,
+            sameSite: isProduction ? 'none' : 'lax',
             path: '/',
-            domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
-            maxAge: 3600000 // 1 hour
+            maxAge: 28800000 // 8 hours
         };
 
         const refreshCookieOptions = {

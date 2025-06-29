@@ -122,17 +122,52 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
+  // Centralized logout function with comprehensive cleanup
   const logout = async () => {
     try {
+      // Clear local storage and session storage first
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Call logout API
       await axios.post(`${API_URL}/user/logout`, {}, {
-        withCredentials: true
+        withCredentials: true,
+        timeout: 5000 // 5 second timeout
       });
+      
+      console.log('Logout API call successful');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Logout API error:', error);
+      // Continue with cleanup even if API call fails
     } finally {
+      // Always perform cleanup regardless of API call success/failure
+      
+      // Update auth state
       setIsAuthenticated(false);
       setUser(null);
+      
+      // Manual cookie clearing as comprehensive backup
+      if (typeof document !== 'undefined') {
+        document.cookie.split(";").forEach((c) => {
+          const eqPos = c.indexOf("=");
+          const name = eqPos > -1 ? c.substr(0, eqPos) : c;
+          
+          // Clear with multiple domain/path combinations to ensure complete removal
+          const clearOptions = [
+            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`,
+            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`,
+            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`,
+            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;secure;samesite=none`,
+            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;secure;samesite=lax`
+          ];
+          
+          clearOptions.forEach(option => {
+            document.cookie = option;
+          });
+        });
+      }
+      
+      console.log('Logout cleanup completed');
     }
   };
 
