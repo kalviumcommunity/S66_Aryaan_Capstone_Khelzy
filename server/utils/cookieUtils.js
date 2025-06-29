@@ -4,14 +4,25 @@
  * @returns {object} Cookie configuration object
  */
 const getCookieOptions = (maxAge = 24 * 60 * 60 * 1000) => {
-    return {
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    const options = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' || process.env.HTTPS === 'true',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        secure: isProduction || process.env.HTTPS === 'true',
+        sameSite: isProduction ? 'none' : 'lax',
         path: '/',
-        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+        // Only set domain in production for cross-subdomain sharing
+        // Omit domain for same-origin requests to avoid issues
+        ...(isProduction && { domain: '.vercel.app' }),
         maxAge
     };
+    
+    // Debug logging in development
+    if (!isProduction) {
+        console.log('Cookie options:', options);
+    }
+    
+    return options;
 };
 
 /**

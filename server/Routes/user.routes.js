@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { register, login, logout, getCurrentUser, checkAuth, refreshAccessToken } = require('../Controller/user.controller');
 const { verifyToken, createTokens } = require('../MiddleWare/authMiddleware');
 const { UserModel } = require('../models/user.model');
+const { getCookieOptions } = require('../utils/cookieUtils');
 
 
 const userRouter = express.Router();
@@ -50,21 +51,9 @@ authRouter.get('/google/callback',
       const user = req.user;
       const { accessToken, refreshToken } = createTokens(user);
       
-      // Cookie options for access token
-      const cookieOptions = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' || process.env.HTTPS === 'true',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        path: '/',
-        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      };
-
-      // Cookie options for refresh token
-      const refreshCookieOptions = {
-        ...cookieOptions,
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-      };
+      // Use standardized cookie options
+      const cookieOptions = getCookieOptions(24 * 60 * 60 * 1000); // 24 hours
+      const refreshCookieOptions = getCookieOptions(7 * 24 * 60 * 60 * 1000); // 7 days
 
       res.cookie('token', accessToken, cookieOptions);
       res.cookie('refreshToken', refreshToken, refreshCookieOptions);

@@ -69,6 +69,16 @@ const login = async (req, res) => {
         // Set tokens in cookies
         res.cookie('token', accessToken, cookieOptions);
         res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+        
+        // Debug logging in development
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('Manual login - Cookies set:', {
+                token: !!accessToken,
+                refreshToken: !!refreshToken,
+                cookieOptions,
+                refreshCookieOptions
+            });
+        }
 
         res.status(200).json({ 
             success: true,
@@ -173,15 +183,48 @@ const getCurrentUser = async (req, res) => {
 };
 
 /**
- * Check if the user is authenticated without returning user data
- * Useful for simple auth checks on protected routes
+ * Check if the user is authenticated and return user data
+ * Useful for auth checks that also need user information
  */
 const checkAuth = async (req, res) => {
-    // If this function is reached, the user is authenticated (verifyToken middleware)
-    res.status(200).json({
-        success: true,
-        isAuthenticated: true
-    });
+    try {
+        // If this function is reached, the user is authenticated (verifyToken middleware)
+        // Get user data from the token
+        const userId = req.tokenData?.userId;
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: 'User not authenticated'
+            });
+        }
+        
+        // Fetch the complete user data from database
+        const user = await UserModel.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            isAuthenticated: true,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                profilePicture: user.profilePicture
+            }
+        });
+    } catch (error) {
+        console.error('Check auth error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Internal server error'
+        });
+    }
 };
 
 const refreshAccessToken = async (req, res) => {
