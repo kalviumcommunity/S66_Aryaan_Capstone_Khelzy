@@ -48,7 +48,7 @@ authRouter.get('/google/callback',
         throw new Error('User data not found');
       }
       
-      const user = await UserModel.findById(req.user._id);
+      const user = req.user;
       const { accessToken, refreshToken } = createTokens(user);
       
       const userData = {
