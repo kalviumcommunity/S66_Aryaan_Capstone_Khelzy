@@ -79,8 +79,17 @@ authRouter.get('/google/callback',
 
       res.cookie('token', accessToken, cookieOptions);
       res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+      
+      // Set user data token as secure HTTP-only cookie
+      res.cookie('userToken', userToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'none',
+        maxAge: 24 * 60 * 60 * 1000,
+        path: '/'
+      });
 
-      res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${accessToken}&userToken=${userToken}`);
+      res.redirect(`${process.env.FRONTEND_URL}/oauth-callback`);
     } catch (error) {
       console.error('Auth Callback Error:', error);
       res.redirect(`${process.env.FRONTEND_URL}/auth?error=Authentication failed`);
