@@ -13,6 +13,7 @@ import { Toaster } from 'react-hot-toast';
 import Loading from './components/common/Loading';
 import ProtectedRoute from './components/ProtectedRoute';
 import OAuthCallback from './components/OAuthCallBack';
+import NotFound from './components/NotFound';
 import './App.css';
 
 // Lazy loaded components
@@ -97,6 +98,7 @@ function App() {
                   <Route path="/games/:id" element={<ProtectedRoute><Desc /></ProtectedRoute>} />
                   <Route path="/games/filter/:category" element={<ProtectedRoute><GameByTag /></ProtectedRoute>} />
                   <Route path="/favorites" element={<ProtectedRoute><FavGames/></ProtectedRoute>} />
+                  <Route path='*'element={<NotFound/>}></Route>
                 </Routes>
               </Suspense>
             </div>
