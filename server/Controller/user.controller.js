@@ -65,8 +65,8 @@ const login = async (req, res) => {
         
         const cookieOptions = {
             httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? 'none' : 'lax',
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax', // Changed from 'none' to 'lax'
             path: '/',
             maxAge: 28800000 // 8 hours
         };

@@ -164,10 +164,10 @@ const login = async (req, res) => {
 
     const cookieOptions = {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // Changed from 'none' to 'lax'
       path: "/",
-      domain: process.env.NODE_ENV === "production" ? ".vercel.app" : undefined,
+      // Remove domain setting to make it first-party
       maxAge: 3600000, // 1 hour
     };
 

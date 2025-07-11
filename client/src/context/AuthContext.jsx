@@ -152,13 +152,12 @@ export const AuthProvider = ({ children }) => {
           const eqPos = c.indexOf("=");
           const name = eqPos > -1 ? c.substr(0, eqPos) : c;
           
-          // Clear with multiple domain/path combinations to ensure complete removal
+          // Clear with first-party cookie settings
           const clearOptions = [
             `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`,
             `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`,
             `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`,
-            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;secure;samesite=none`,
-            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;secure;samesite=lax`
+            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;secure;samesite=lax` // Changed to lax
           ];
           
           clearOptions.forEach(option => {
