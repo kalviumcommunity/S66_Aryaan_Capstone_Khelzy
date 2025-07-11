@@ -162,26 +162,12 @@ const login = async (req, res) => {
       profilePicture: user.profilePicture,
     });
 
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Changed from 'none' to 'lax'
-      path: "/",
-      // Remove domain setting to make it first-party
-      maxAge: 3600000, // 1 hour
-    };
-
-    const refreshCookieOptions = {
-      ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    };
-
-    res.cookie("token", accessToken, cookieOptions);
-    res.cookie("refreshToken", refreshToken, refreshCookieOptions);
     res.json({
       verified: true,
       ...(process.env.NODE_ENV === 'development' && { similarity }),
       message: "Login successful - Face verified",
+      token: accessToken,
+      refreshToken: refreshToken,
       user: {
         id: user._id,
         email: user.email,

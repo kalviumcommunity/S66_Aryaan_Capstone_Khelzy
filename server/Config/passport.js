@@ -55,24 +55,6 @@ async (accessToken, refreshToken, profile, done) => {
             });
         }
         
-        // Update your OAuth success callback to use first-party cookie settings
-        const cookieOptions = {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax', // Changed from 'none' to 'lax' for first-party
-          path: '/',
-          maxAge: 8 * 60 * 60 * 1000 // 8 hours
-        };
-
-        const refreshCookieOptions = {
-          ...cookieOptions,
-          maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        };
-
-        // Set cookies with first-party settings
-        res.cookie('token', accessToken, cookieOptions);
-        res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-        
         return done(null, user);
     } catch (error) {
         console.error('Google Auth Error:', error);

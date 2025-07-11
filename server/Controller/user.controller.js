@@ -61,28 +61,10 @@ const login = async (req, res) => {
         // Generate access and refresh tokens
         const { accessToken, refreshToken } = createTokens(user);
 
-        const isProduction = process.env.NODE_ENV === 'production';
-        
-        const cookieOptions = {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax', // Changed from 'none' to 'lax'
-            path: '/',
-            maxAge: 28800000 // 8 hours
-        };
-
-        const refreshCookieOptions = {
-            ...cookieOptions,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        };
-
-        // Set tokens in cookies
-        res.cookie('token', accessToken, cookieOptions);
-        res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-
         res.status(200).json({ 
             success: true,
-            token: accessToken, // Send token in response for localStorage
+            token: accessToken,
+            refreshToken: refreshToken,
             user: {
                 id: user._id,
                 name: user.name,
@@ -101,28 +83,8 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
-        const isProduction = process.env.NODE_ENV === 'production';
-        
-        const cookieOptions = {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? 'none' : 'lax',
-            path: '/'
-        };
-
-        // Clear auth cookies with matching options
-        res.clearCookie('token', cookieOptions);
-        res.clearCookie('refreshToken', cookieOptions);
-
-        // Clear any other session-related cookies if they exist
-        if (req.cookies) {
-            Object.keys(req.cookies).forEach(cookieName => {
-                if (cookieName !== 'token' && cookieName !== 'refreshToken') {
-                    res.clearCookie(cookieName, cookieOptions);
-                }
-            });
-        }
-
+        // Since we're using localStorage, we don't need to clear cookies
+        // The client will handle removing tokens from localStorage
         res.status(200).json({
             success: true,
             message: 'Logged out successfully'

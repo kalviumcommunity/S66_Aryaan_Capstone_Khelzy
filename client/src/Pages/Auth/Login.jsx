@@ -36,17 +36,12 @@ const SlidingDoorLoginPage = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(
-        `${API_URL}/user/login`, 
-        loginData,
-        { withCredentials: true } // Important for receiving cookies
-      );
+      const result = await login(loginData);
       
-      if (response.data.success) {
-        await login(); // Update auth context state
+      if (result.success) {
         navigate('/home');
       } else {
-        throw new Error(response.data.message || 'Login failed');
+        throw new Error(result.message || 'Login failed');
       }
     } catch (error) {
       setError(error.response?.data?.message || error.message || 'Login failed');
@@ -64,28 +59,26 @@ const SlidingDoorLoginPage = () => {
       // Register the user
       const registerResponse = await axios.post(
         `${API_URL}/user/register`, 
-        signupData,
-        { withCredentials: true }
+        signupData
       );
       
       if (registerResponse.data.success) {
         // If registration is successful, automatically log them in
-        const loginResponse = await axios.post(
-          `${API_URL}/user/login`,
-          {
-            email: signupData.email,
-            password: signupData.password
-          },
-          { withCredentials: true }
-        );
+        const result = await login({
+          email: signupData.email,
+          password: signupData.password
+        });
         
-        if (loginResponse.data.success) {
-          await login(); // Update auth context state
+        if (result.success) {
           navigate('/home');
+        } else {
+          throw new Error(result.message || 'Login after signup failed');
         }
+      } else {
+        throw new Error(registerResponse.data.message || 'Registration failed');
       }
     } catch (error) {
-      setError(error.response?.data?.message || 'Registration failed');
+      setError(error.response?.data?.message || error.message || 'Registration failed');
     } finally {
       setIsLoading(false);
     }
