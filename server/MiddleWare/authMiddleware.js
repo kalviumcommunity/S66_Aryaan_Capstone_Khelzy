@@ -30,13 +30,13 @@ const createTokens = (user) => {
 // Middleware to verify JWT token
 const verifyToken = async (req, res, next) => {
     try {
-        // Get token from request headers or cookies
-        let token = req.cookies?.token;
-        
-        // If token is not in cookies, check Authorization header
-        if (!token) {
-            const authHeader = req.headers.authorization;
-            token = authHeader && authHeader.split(' ')[1];
+        // Get token from Authorization header first, then fallback to cookies
+        let token = null;
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        } else if (req.cookies?.token) {
+            token = req.cookies.token;
         }
         
         // Check if token exists

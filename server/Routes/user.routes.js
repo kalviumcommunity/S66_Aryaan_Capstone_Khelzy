@@ -24,35 +24,21 @@ authRouter.get('/google', passport.authenticate('google', { scope: ['profile', '
 
 authRouter.get('/google/callback', 
     passport.authenticate('google', { 
-        failureRedirect: process.env.SERVER_URL
+        failureRedirect: process.env.FRONTEND_URL || 'http://localhost:5173'
     }),
     async (req, res) => {
         const user = await UserModel.findById(req.user._id)
         const { accessToken, refreshToken } = createTokens(user);
 
-        const isProduction = process.env.NODE_ENV === 'production';
-        
-        const cookieOptions = {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? 'none' : 'lax',
-            maxAge: 3600000, // 1 hour
-            path: '/'
-        };
-
-        const refreshCookieOptions = {
-            ...cookieOptions,
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-        };
-
-        res.cookie('token', accessToken, cookieOptions);
-        res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-
         const frontendURL = process.env.FRONTEND_URL || `http://localhost:5173`;
             
-        // Passing token in URL for the initial verification only
-        // The actual auth will use the HttpOnly cookies set above
-        res.redirect(`${frontendURL}/auth/callback?token=${accessToken}`);
+        // Pass tokens through URL for localStorage storage
+        res.redirect(`${frontendURL}/auth/callback?token=${accessToken}&refreshToken=${refreshToken}&user=${encodeURIComponent(JSON.stringify({
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            profilePicture: user.profilePicture
+        }))}`);
     }
 );
 

@@ -17,7 +17,7 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cookieParser());
+app.use(cookieParser()); // Keep for potential OAuth flows
 
 // Enable CORS with specific origins and configuration
 app.use(cors({
@@ -44,16 +44,14 @@ app.use(cors({
   optionsSuccessStatus: 200 // For legacy browser support
 }));
 
-app.enable('trust proxy'); // Add this line for secure cookies to work
-
-// Session middleware
+// Session middleware (keep minimal for OAuth flows)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'someDefaultSecret',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax', // Changed from 'none' to 'lax'
+    sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));

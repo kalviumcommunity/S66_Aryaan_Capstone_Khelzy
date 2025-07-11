@@ -1,21 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Loading from './common/Loading';
 
 const OAuthCallback = () => {
   const [status, setStatus] = useState('Verifying your authentication...');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { setIsAuthenticated, setUser } = useAuth();
   
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        // If we got here, the cookies are already set by the server
-        // Just need to update our auth context state
-        await login();
-        setStatus('Authentication successful! Redirecting...');
-        setTimeout(() => navigate('/home'), 3000);
+        // Extract tokens and user data from URL parameters
+        const urlParams = new URLSearchParams(location.search);
+        const token = urlParams.get('token');
+        const refreshToken = urlParams.get('refreshToken');
+        const userParam = urlParams.get('user');
+        
+        if (token && refreshToken && userParam) {
+          // Store tokens in localStorage
+          localStorage.setItem('authToken', token);
+          localStorage.setItem('refreshToken', refreshToken);
+          
+          // Parse and set user data
+          const userData = JSON.parse(decodeURIComponent(userParam));
+          setUser(userData);
+          setIsAuthenticated(true);
+          
+          setStatus('Authentication successful! Redirecting...');
+          setTimeout(() => navigate('/home'), 2000);
+        } else {
+          throw new Error('Missing authentication data');
+        }
       } catch (error) {
         console.error('Authentication verification failed:', error);
         setStatus('Authentication failed. Redirecting to login...');
@@ -24,7 +41,7 @@ const OAuthCallback = () => {
     };
 
     verifyAuth();
-  }, [login, navigate]);
+  }, [location.search, navigate, setIsAuthenticated, setUser]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-white">

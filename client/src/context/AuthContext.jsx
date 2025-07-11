@@ -12,6 +12,32 @@ export const useAuth = () => {
   return context;
 };
 
+// Utility functions for localStorage token management
+const getToken = () => localStorage.getItem('authToken');
+const getRefreshToken = () => localStorage.getItem('refreshToken');
+const setTokens = (token, refreshToken) => {
+  localStorage.setItem('authToken', token);
+  if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+};
+const removeTokens = () => {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('refreshToken');
+};
+
+// Set up axios interceptor to include token in requests
+axios.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    // Remove withCredentials since we're using localStorage
+    config.withCredentials = false;
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -22,8 +48,16 @@ export const AuthProvider = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       setLoading(true);
+      const token = getToken();
+      
+      if (!token) {
+        setIsAuthenticated(false);
+        setUser(null);
+        setLoading(false);
+        return false;
+      }
+
       const response = await axios.get(`${API_URL}/user/check`, {
-        withCredentials: true,
         timeout: 10000 // 10 second timeout
       });
       
@@ -39,6 +73,7 @@ export const AuthProvider = ({ children }) => {
       if (error.response?.status === 401) {
         setIsAuthenticated(false);
         setUser(null);
+        removeTokens(); // Clear invalid tokens
       }
       
       return false;
@@ -52,11 +87,31 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
-  // Simplified login function - just checks auth status after login
-  const login = async () => {
-    // Add a small delay to ensure cookies are set
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return await checkAuthStatus();
+  // Login function to handle token-based authentication
+  const login = async (credentials) => {
+    try {
+      if (credentials) {
+        // Handle email/password login
+        const response = await axios.post(`${API_URL}/user/login`, credentials);
+        
+        if (response.data.success && response.data.token) {
+          setTokens(response.data.token, response.data.refreshToken);
+          setIsAuthenticated(true);
+          setUser(response.data.user);
+          return response.data;
+        }
+        return response.data;
+      } else {
+        // Just check auth status (for OAuth callback)
+        return await checkAuthStatus();
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Login failed'
+      };
+    }
   };
 
   // Face authentication signup
@@ -66,8 +121,6 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`${API_URL}/faceAuth/face/signup`, {
         email,
         faceEmbedding
-      }, {
-        withCredentials: true
       });
       
       return {
@@ -92,11 +145,14 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(`${API_URL}/faceAuth/face/login`, {
         email,
         faceEmbedding
-      }, {
-        withCredentials: true
       });
 
       if (response.data.verified) {
+        // Store tokens in localStorage
+        if (response.data.token) {
+          setTokens(response.data.token, response.data.refreshToken);
+        }
+        
         setIsAuthenticated(true);
         setUser(response.data.user);
         return {
@@ -125,13 +181,11 @@ export const AuthProvider = ({ children }) => {
   // Centralized logout function with comprehensive cleanup
   const logout = async () => {
     try {
-      // Clear local storage and session storage first
-      localStorage.clear();
-      sessionStorage.clear();
+      // Clear localStorage tokens first
+      removeTokens();
       
-      // Call logout API
+      // Call logout API (still useful for server-side cleanup if needed)
       await axios.post(`${API_URL}/user/logout`, {}, {
-        withCredentials: true,
         timeout: 5000 // 5 second timeout
       });
       
@@ -145,26 +199,6 @@ export const AuthProvider = ({ children }) => {
       // Update auth state
       setIsAuthenticated(false);
       setUser(null);
-      
-      // Manual cookie clearing as comprehensive backup
-      if (typeof document !== 'undefined') {
-        document.cookie.split(";").forEach((c) => {
-          const eqPos = c.indexOf("=");
-          const name = eqPos > -1 ? c.substr(0, eqPos) : c;
-          
-          // Clear with first-party cookie settings
-          const clearOptions = [
-            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`,
-            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`,
-            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`,
-            `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;secure;samesite=lax` // Changed to lax
-          ];
-          
-          clearOptions.forEach(option => {
-            document.cookie = option;
-          });
-        });
-      }
       
       console.log('Logout cleanup completed');
     }
