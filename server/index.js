@@ -28,8 +28,7 @@ app.use(cors({
     const allowedOrigins = [
       process.env.FRONTEND_URL,
       'http://localhost:5173',
-      'https://khelzy.vercel.app', // Add your actual frontend Vercel URL
-      // Add any other domains you need
+      'https://khelzy.vercel.app',
     ].filter(Boolean);
     
     if (allowedOrigins.includes(origin)) {
@@ -54,9 +53,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none',
+    sameSite: 'lax', // Changed from 'none' to 'lax'
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  },
+  }
 }));
 
 // Initialize Passport and restore authentication state from session
