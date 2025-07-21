@@ -15,6 +15,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import OAuthCallback from './components/OAuthCallBack';
 import NotFound from './Pages/Static/NotFound';
 import AboutUs from './Pages/Static/AboutUs';
+import PrivatePolicy from './Pages/Static/PrivatePolicy';
 import './App.css';
 
 // Lazy loaded components
@@ -27,7 +28,7 @@ const Desc = lazy(() => import('./Pages/Others/Desc'));
 const AllGames = lazy(() => import('./Pages/Others/AllGames'));
 const GameByTag = lazy(() => import('./components/GameByTag'));
 const FavGames = lazy(() => import('./Pages/Others/FavGames'));
-const PrivacyPolicy = lazy(() => import('./Pages/Static/PrivatePolicy'));
+// const PrivacyPolicy = lazy(() => import('./Pages/Static/PrivatePolicy'));
 const TermOfServices  = lazy(()=> import('./Pages/Static/TermOfServices'));
 const SupportCenter = lazy(()=> import('./Pages/Static/SupportCenter'))
 
@@ -74,63 +75,49 @@ function App() {
     <Router {...routerOptions}>
       <AuthProvider>
         <ThemeProvider>
+          <ComponentPreloader />
           {/* Fixed background elements */}
           <div className="fixed inset-0 bg-gradient-to-br from-gray-900 to-purple-900" aria-hidden="true" />
           <div className="fixed inset-0 bg-grid-pattern opacity-5" aria-hidden="true" />
           
           <div className="min-h-screen text-white overflow-x-hidden relative">
             <div className="relative z-10 transition-all duration-300 ease-in-out">
-              <Routes>
-                {/* Public Routes with Auth Guard - WITH Suspense */}
-                <Route path="/login" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <AuthGuard><Login /></AuthGuard>
-                  </Suspense>
-                } />
-                <Route path="/face-auth" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <AuthGuard><FaceAuth /></AuthGuard>
-                  </Suspense>
-                } />
-                <Route path="/auth/callback" element={<OAuthCallback />} />
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  {/* Public Routes with Auth Guard */}
+                  <Route path="/login" element={<AuthGuard><Login /></AuthGuard>} />
+                  <Route path="/face-auth" element={<AuthGuard><FaceAuth /></AuthGuard>} />
+                  <Route path="/auth/callback" element={<OAuthCallback />} />
 
-                {/* Landing Route with Auth Guard - WITH Suspense */}
-                <Route path="/landing" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <AuthGuard><LandingPage /></AuthGuard>
-                  </Suspense>
-                } />
-                <Route path="/" element={
-                  <Suspense fallback={<PageLoader />}>
-                    <AuthGuard><LandingPage /></AuthGuard>
-                  </Suspense>
-                } />
+                  {/* Landing Route with Auth Guard */}
+                  <Route path="/landing" element={<AuthGuard><LandingPage /></AuthGuard>} />
+                  <Route path="/" element={<AuthGuard><LandingPage /></AuthGuard>} />
 
-                {/* Protected Home Route - WITH Suspense */}
-                <Route path="/home" element={
-                  <Suspense fallback={<PageLoader />}>
+                  {/* Protected Home Route */}
+                  <Route path="/home" element={
                     <ConditionalRoute path="/home" element={
                       <ProtectedRoute><Home /></ProtectedRoute>
                     } />
-                  </Suspense>
-                } />
+                  } />
 
-                {/* Other Protected Routes - NO Suspense for smooth navigation */}
-                <Route path="/top-charts" element={<ProtectedRoute><TopChart /></ProtectedRoute>} />
-                <Route path="/games" element={<ProtectedRoute><AllGames /></ProtectedRoute>} />
-                <Route path="/games/:id" element={<ProtectedRoute><Desc /></ProtectedRoute>} />
-                <Route path="/games/filter/:category" element={<ProtectedRoute><GameByTag /></ProtectedRoute>} />
-                <Route path="/favorites" element={<ProtectedRoute><FavGames/></ProtectedRoute>} />
-                
-                {/* Static Pages - NO Suspense */}
-                <Route path='/about' element={<AboutUs/>}/>
-                <Route path='/privacy' element={<ProtectedRoute><PrivacyPolicy/></ProtectedRoute>}/>
-                <Route path='/terms' element={<ProtectedRoute><TermOfServices/></ProtectedRoute>}/>
-                <Route path='/support' element={<ProtectedRoute><SupportCenter/></ProtectedRoute>}/>
-                
-                {/* 404 Route - MUST BE LAST */}
-                <Route path='*' element={<NotFound/>}/>
-              </Routes>
+                  {/* Other Protected Routes */}
+                  <Route path="/top-charts" element={<ProtectedRoute><TopChart /></ProtectedRoute>} />
+                  <Route path="/games" element={<ProtectedRoute><AllGames /></ProtectedRoute>} />
+                  <Route path="/games/:id" element={<ProtectedRoute><Desc /></ProtectedRoute>} />
+                  <Route path="/games/filter/:category" element={<ProtectedRoute><GameByTag /></ProtectedRoute>} />
+                  <Route path="/favorites" element={<ProtectedRoute><FavGames/></ProtectedRoute>} />
+                  
+                  {/* Static Pages - Public Access with Suspense */}
+                  <Route path='/about' element={<AboutUs/>}/>
+                  <Route path='/privacy' element={<PrivatePolicy/>}/>
+                  <Route path='/terms' element={<TermOfServices/>}/>
+                  <Route path='/support' element={<SupportCenter/>}/>
+                  
+                  
+                  {/* 404 Route - MUST BE LAST */}
+                  <Route path='*' element={<NotFound/>}/>
+                </Routes>
+              </Suspense>
             </div>
           </div>
 
