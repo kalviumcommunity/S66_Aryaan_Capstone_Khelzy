@@ -13,7 +13,8 @@ import { Toaster } from 'react-hot-toast';
 import Loading from './components/common/Loading';
 import ProtectedRoute from './components/ProtectedRoute';
 import OAuthCallback from './components/OAuthCallBack';
-import NotFound from './components/NotFound';
+import NotFound from './Pages/Static/NotFound';
+import AboutUs from './Pages/Static/AboutUs';
 import './App.css';
 
 // Lazy loaded components
@@ -26,6 +27,10 @@ const Desc = lazy(() => import('./Pages/Others/Desc'));
 const AllGames = lazy(() => import('./Pages/Others/AllGames'));
 const GameByTag = lazy(() => import('./components/GameByTag'));
 const FavGames = lazy(() => import('./Pages/Others/FavGames'));
+const PrivacyPolicy = lazy(() => import('./Pages/Static/PrivatePolicy'));
+const TermOfServices  = lazy(()=> import('./Pages/Static/TermOfServices'));
+const SupportCenter = lazy(()=> import('./Pages/Static/SupportCenter'))
+
 
 // Loading component
 const PageLoader = () => <Loading />;
@@ -98,7 +103,16 @@ function App() {
                   <Route path="/games/:id" element={<ProtectedRoute><Desc /></ProtectedRoute>} />
                   <Route path="/games/filter/:category" element={<ProtectedRoute><GameByTag /></ProtectedRoute>} />
                   <Route path="/favorites" element={<ProtectedRoute><FavGames/></ProtectedRoute>} />
-                  <Route path='*'element={<NotFound/>}></Route>
+                  
+                  {/* Static Pages - Public Access with Suspense */}
+                  <Route path='/about' element={<AboutUs/>}/>
+                  <Route path='/privacy' element={<PrivacyPolicy/>}/>
+                  <Route path='/terms' element={<TermOfServices/>}/>
+                  <Route path='/support' element={<SupportCenter/>}/>
+                  
+                  
+                  {/* 404 Route - MUST BE LAST */}
+                  <Route path='*' element={<NotFound/>}/>
                 </Routes>
               </Suspense>
             </div>
