@@ -31,37 +31,7 @@ const PrivacyPolicy = lazy(() => import('./Pages/Static/PrivatePolicy'));
 const TermOfServices  = lazy(()=> import('./Pages/Static/TermOfServices'));
 const SupportCenter = lazy(()=> import('./Pages/Static/SupportCenter'))
 
-// Preloader component
-const ComponentPreloader = () => {
-  const { isAuthenticated } = useAuth();
-  
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Preload main navigation components after authentication
-      const preloadComponents = async () => {
-        try {
-          await Promise.all([
-            import('./Pages/Others/TopChart'),
-            import('./Pages/Others/AllGames'),
-            import('./Pages/Others/Desc'),
-            import('./components/GameByTag'),
-            import('./Pages/Others/FavGames'),
-            import('./Pages/Static/PrivatePolicy'),
-            import('./Pages/Static/TermOfServices'),
-            import('./Pages/Static/SupportCenter')
-          ]);
-        } catch (error) {
-          console.log('Component preloading failed:', error);
-        }
-      };
-      
-      // Delay preloading to not interfere with initial render
-      setTimeout(preloadComponents, 1000);
-    }
-  }, [isAuthenticated]);
-  
-  return null;
-};
+
 
 // Loading component
 const PageLoader = () => <Loading />;
@@ -104,49 +74,63 @@ function App() {
     <Router {...routerOptions}>
       <AuthProvider>
         <ThemeProvider>
-          <ComponentPreloader />
           {/* Fixed background elements */}
           <div className="fixed inset-0 bg-gradient-to-br from-gray-900 to-purple-900" aria-hidden="true" />
           <div className="fixed inset-0 bg-grid-pattern opacity-5" aria-hidden="true" />
           
           <div className="min-h-screen text-white overflow-x-hidden relative">
             <div className="relative z-10 transition-all duration-300 ease-in-out">
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  {/* Public Routes with Auth Guard */}
-                  <Route path="/login" element={<AuthGuard><Login /></AuthGuard>} />
-                  <Route path="/face-auth" element={<AuthGuard><FaceAuth /></AuthGuard>} />
-                  <Route path="/auth/callback" element={<OAuthCallback />} />
+              <Routes>
+                {/* Public Routes with Auth Guard - WITH Suspense */}
+                <Route path="/login" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AuthGuard><Login /></AuthGuard>
+                  </Suspense>
+                } />
+                <Route path="/face-auth" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AuthGuard><FaceAuth /></AuthGuard>
+                  </Suspense>
+                } />
+                <Route path="/auth/callback" element={<OAuthCallback />} />
 
-                  {/* Landing Route with Auth Guard */}
-                  <Route path="/landing" element={<AuthGuard><LandingPage /></AuthGuard>} />
-                  <Route path="/" element={<AuthGuard><LandingPage /></AuthGuard>} />
+                {/* Landing Route with Auth Guard - WITH Suspense */}
+                <Route path="/landing" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AuthGuard><LandingPage /></AuthGuard>
+                  </Suspense>
+                } />
+                <Route path="/" element={
+                  <Suspense fallback={<PageLoader />}>
+                    <AuthGuard><LandingPage /></AuthGuard>
+                  </Suspense>
+                } />
 
-                  {/* Protected Home Route */}
-                  <Route path="/home" element={
+                {/* Protected Home Route - WITH Suspense */}
+                <Route path="/home" element={
+                  <Suspense fallback={<PageLoader />}>
                     <ConditionalRoute path="/home" element={
                       <ProtectedRoute><Home /></ProtectedRoute>
                     } />
-                  } />
+                  </Suspense>
+                } />
 
-                  {/* Other Protected Routes */}
-                  <Route path="/top-charts" element={<ProtectedRoute><TopChart /></ProtectedRoute>} />
-                  <Route path="/games" element={<ProtectedRoute><AllGames /></ProtectedRoute>} />
-                  <Route path="/games/:id" element={<ProtectedRoute><Desc /></ProtectedRoute>} />
-                  <Route path="/games/filter/:category" element={<ProtectedRoute><GameByTag /></ProtectedRoute>} />
-                  <Route path="/favorites" element={<ProtectedRoute><FavGames/></ProtectedRoute>} />
-                  
-                  {/* Static Pages - Public Access with Suspense */}
-                  <Route path='/about' element={<AboutUs/>}/>
-                  <Route path='/privacy' element={<ProtectedRoute><PrivacyPolicy/></ProtectedRoute>}/>
-                  <Route path='/terms' element={<ProtectedRoute><TermOfServices/></ProtectedRoute>}/>
-                  <Route path='/support' element={<ProtectedRoute><SupportCenter/></ProtectedRoute>}/>
-                  
-                  
-                  {/* 404 Route - MUST BE LAST */}
-                  <Route path='*' element={<NotFound/>}/>
-                </Routes>
-              </Suspense>
+                {/* Other Protected Routes - NO Suspense for smooth navigation */}
+                <Route path="/top-charts" element={<ProtectedRoute><TopChart /></ProtectedRoute>} />
+                <Route path="/games" element={<ProtectedRoute><AllGames /></ProtectedRoute>} />
+                <Route path="/games/:id" element={<ProtectedRoute><Desc /></ProtectedRoute>} />
+                <Route path="/games/filter/:category" element={<ProtectedRoute><GameByTag /></ProtectedRoute>} />
+                <Route path="/favorites" element={<ProtectedRoute><FavGames/></ProtectedRoute>} />
+                
+                {/* Static Pages - NO Suspense */}
+                <Route path='/about' element={<AboutUs/>}/>
+                <Route path='/privacy' element={<ProtectedRoute><PrivacyPolicy/></ProtectedRoute>}/>
+                <Route path='/terms' element={<ProtectedRoute><TermOfServices/></ProtectedRoute>}/>
+                <Route path='/support' element={<ProtectedRoute><SupportCenter/></ProtectedRoute>}/>
+                
+                {/* 404 Route - MUST BE LAST */}
+                <Route path='*' element={<NotFound/>}/>
+              </Routes>
             </div>
           </div>
 
