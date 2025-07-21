@@ -16,7 +16,7 @@ const FaceAuth = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   // Use our auth context for face authentication functions
-  const { isAuthenticated, faceAuthSignup, faceAuthLogin, faceAuthError } = useAuth();
+  const { isAuthenticated, faceAuthSignup, faceAuthLogin } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -145,7 +145,7 @@ const FaceAuth = () => {
       console.error("Registration error:", error);
       setVerificationStatus({
         success: false,
-        message: faceAuthError || "Registration failed",
+        message: "Registration failed",
       });
     } finally {
       setIsVerifying(false);
@@ -201,7 +201,7 @@ const FaceAuth = () => {
       console.error("Login error:", error);
       setVerificationStatus({
         success: false,
-        message: faceAuthError || "Face verification failed",
+        message: error.message || "Face verification failed",
       });
     } finally {
       setIsVerifying(false);

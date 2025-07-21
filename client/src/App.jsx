@@ -13,7 +13,7 @@ import { Toaster } from 'react-hot-toast';
 import Loading from './components/common/Loading';
 import ProtectedRoute from './components/ProtectedRoute';
 import OAuthCallback from './components/OAuthCallBack';
-import NotFound from './components/NotFound';
+import NotFound from './Pages/NotFound';
 import './App.css';
 
 // Lazy loaded components
