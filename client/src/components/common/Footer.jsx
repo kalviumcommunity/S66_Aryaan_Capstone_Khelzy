@@ -20,10 +20,9 @@ const Footer = () => {
                 Quick Links
               </h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Home</a></li>
-                <li><a href="#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">About Us</a></li>
-                <li><a href="/games" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Games</a></li>
-                <li><a href="#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Contact</a></li>
+                <li><a href="/home#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Home</a></li>
+                <li><a href="/about#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">About Us</a></li>
+                <li><a href="/games#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Games</a></li>
               </ul>
             </div>
             
@@ -34,11 +33,10 @@ const Footer = () => {
                 Help & Support
               </h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">FAQs</a></li>
-                <li><a href="#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Terms of Service</a></li>
-                <li><a href="#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Privacy Policy</a></li>
-                <li><a href="#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Support Center</a></li>
-                <li><a href="#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Contact Us</a></li>
+                <li><a href="/FAQ" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">FAQs</a></li>
+                <li><a href="/terms#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Terms of Service</a></li>
+                <li><a href="/privacy#" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Privacy Policy</a></li>
+                <li><a href="/support" className="text-white/70 text-sm hover:text-[#06c1ff] transition-all duration-300 hover:pl-1">Support Center</a></li>
               </ul>
             </div>
           </div>
