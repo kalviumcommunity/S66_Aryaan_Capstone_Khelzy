@@ -16,6 +16,8 @@ import OAuthCallback from './components/OAuthCallBack';
 import NotFound from './Pages/Static/NotFound';
 import AboutUs from './Pages/Static/AboutUs';
 import PrivatePolicy from './Pages/Static/PrivatePolicy';
+import TermOfServices from './Pages/Static/TermOfServices';
+import SupportCenter from './Pages/Static/SupportCenter';
 import './App.css';
 
 // Lazy loaded components
@@ -28,9 +30,7 @@ const Desc = lazy(() => import('./Pages/Others/Desc'));
 const AllGames = lazy(() => import('./Pages/Others/AllGames'));
 const GameByTag = lazy(() => import('./components/GameByTag'));
 const FavGames = lazy(() => import('./Pages/Others/FavGames'));
-// const PrivacyPolicy = lazy(() => import('./Pages/Static/PrivatePolicy'));
-const TermOfServices  = lazy(()=> import('./Pages/Static/TermOfServices'));
-const SupportCenter = lazy(()=> import('./Pages/Static/SupportCenter'))
+
 
 
 
