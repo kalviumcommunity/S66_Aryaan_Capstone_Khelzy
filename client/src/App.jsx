@@ -75,7 +75,6 @@ function App() {
     <Router {...routerOptions}>
       <AuthProvider>
         <ThemeProvider>
-          <ComponentPreloader />
           {/* Fixed background elements */}
           <div className="fixed inset-0 bg-gradient-to-br from-gray-900 to-purple-900" aria-hidden="true" />
           <div className="fixed inset-0 bg-grid-pattern opacity-5" aria-hidden="true" />
