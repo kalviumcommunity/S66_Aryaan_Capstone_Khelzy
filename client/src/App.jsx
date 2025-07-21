@@ -105,10 +105,10 @@ function App() {
                   <Route path="/favorites" element={<ProtectedRoute><FavGames/></ProtectedRoute>} />
                   
                   {/* Static Pages - Public Access with Suspense */}
-                  <Route path='/about' element={<AboutUs/>}/>
-                  <Route path='/privacy' element={<PrivacyPolicy/>}/>
-                  <Route path='/terms' element={<TermOfServices/>}/>
-                  <Route path='/support' element={<SupportCenter/>}/>
+                  <Route path='/about' element={<ProtectedRoute><AboutUs/></ProtectedRoute>}/>
+                  <Route path='/privacy' element={<ProtectedRoute><PrivacyPolicy/></ProtectedRoute>}/>
+                  <Route path='/terms' element={<ProtectedRoute><TermOfServices/></ProtectedRoute>}/>
+                  <Route path='/support' element={<ProtectedRoute><SupportCenter/></ProtectedRoute>}/>
                   
                   
                   {/* 404 Route - MUST BE LAST */}
