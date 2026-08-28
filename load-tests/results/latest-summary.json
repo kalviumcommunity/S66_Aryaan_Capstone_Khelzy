@@ -1,0 +1,33 @@
+{
+  "target": "https://khelzy-backend.vercel.app/games",
+  "scenario": {
+    "peak_virtual_users": 120,
+    "duration_seconds": 131
+  },
+  "requests": {
+    "total": 6935,
+    "rate_per_second": 53.05783560839926,
+    "failed": 0,
+    "error_rate_percent": 0
+  },
+  "response_time_ms": {
+    "average": 528.0239451333802,
+    "median": 441.545,
+    "p95": 675.3288299999991,
+    "maximum": 4181.9499
+  },
+  "checks": {
+    "pass_rate_percent": 100
+  },
+  "thresholds": {
+    "http_req_duration": {
+      "p(95)<2000": true
+    },
+    "http_req_failed": {
+      "rate<0.01": true
+    },
+    "checks": {
+      "rate>0.99": true
+    }
+  }
+}
