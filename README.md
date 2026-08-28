@@ -61,8 +61,14 @@ Khelzy is a platform that will bring joy to your system without the need to down
 
 ### Backend deployment Link : 
 
-* https://s66-aryaan-capstone-khelzy.onrender.com
+* https://khelzy-backend.vercel.app/
 
 ### Frontend deployment Link:
 
-* https://s66-aryaan-capstone-khelzy.vercel.app/
+* https://khelzy.vercel.app/
+
+---
+
+## Testing Evidence
+
+Load-test configuration, the Python launcher, raw-output instructions, and an evidence report template are available in [`load-tests/README.md`](load-tests/README.md). The test targets the deployed backend's `GET /games` endpoint and ramps to 120 simulated users. Results must be recorded from an actual run; this repository does not make unverified scale or uptime claims.
