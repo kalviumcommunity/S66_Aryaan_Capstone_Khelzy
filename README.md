@@ -1,5 +1,7 @@
 # Khelzy - Capstone Project
 
+[![Uptime Status](https://img.shields.io/badge/UptimeRobot-Live%20Status-2ea44f?logo=uptimerobot&logoColor=white)](https://stats.uptimerobot.com/C4gJsfH5GX)
+
 ## Project Overview
 Khelzy is a platform that will bring joy to your system without the need to download the game. Users can log in and play amazing mini-games with or without their friends. The platform allows users to write reviews, comment, and rate games. With additional features like inbuilt chat, file uploads, and authentication, Khelzy becomes a complete design hub that streamlines the gaming experience.
 
